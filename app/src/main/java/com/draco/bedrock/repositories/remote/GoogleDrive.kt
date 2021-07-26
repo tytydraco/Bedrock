@@ -210,18 +210,13 @@ class GoogleDrive(
         .files
 
     /**
-     * Write content to an **existing** Google Drive file.
+     * Write raw byte stream content to an **existing** Google Drive file.
      *
-     * @param driveFile Approximate file configuration
-     * @param content String to write to the file
+     * @param file Google Drive File
+     * @param byteArrayContent Byte array content to write to the file
      * @throws FileNotFoundException Desired file does not exist or cannot be found.
      */
-    fun writeFile(driveFile: DriveFile, content: String) {
-        val file = findFile(driveFile) ?: throw FileNotFoundException()
-
-        /* Create a content stream to use when writing the file */
-        val contentBytes = ByteArrayContent.fromString(file.mimeType, content)
-
+    private fun writeFile(file: File, byteArrayContent: ByteArrayContent) {
         /*
          * Create a copy of the important file metadata; we can't use the old one.
          * The id field cannot be changed so it is left out.
@@ -233,18 +228,44 @@ class GoogleDrive(
 
         drive
             .files()
-            .update(file.id, newFile, contentBytes)
+            .update(file.id, newFile, byteArrayContent)
             .execute()
     }
 
     /**
-     * Read content of an **existing** Google Drive file.
+     * Write string content to an **existing** Google Drive file.
+     *
+     * @param driveFile Approximate file configuration
+     * @param content String to write to the file
+     * @throws FileNotFoundException Desired file does not exist or cannot be found.
+     */
+    fun writeFileString(driveFile: DriveFile, content: String) {
+        val file = findFile(driveFile) ?: throw FileNotFoundException()
+        val contentBytes = ByteArrayContent.fromString(file.mimeType, content)
+        writeFile(file, contentBytes)
+    }
+
+    /**
+     * Write byte content to an **existing** Google Drive file.
+     *
+     * @param driveFile Approximate file configuration
+     * @param content Byte array to write to the file
+     * @throws FileNotFoundException Desired file does not exist or cannot be found.
+     */
+    fun writeFileBytes(driveFile: DriveFile, content: ByteArray) {
+        val file = findFile(driveFile) ?: throw FileNotFoundException()
+        val contentBytes = ByteArrayContent(file.mimeType, content)
+        writeFile(file, contentBytes)
+    }
+
+    /**
+     * Read string content of an **existing** Google Drive file.
      *
      * @param driveFile Approximate file configuration
      * @return The string content of the file.
      * @throws FileNotFoundException Desired file does not exist or cannot be found.
      */
-    fun readFile(driveFile: DriveFile): String {
+    fun readFileString(driveFile: DriveFile): String {
         val file = findFile(driveFile) ?: throw FileNotFoundException()
 
         return drive
@@ -252,5 +273,25 @@ class GoogleDrive(
             .get(file.id)
             .executeMedia()
             .parseAsString()
+    }
+
+    /**
+     * Read byte content of an **existing** Google Drive file.
+     *
+     * @param driveFile Approximate file configuration
+     * @return The byte content of the file.
+     * @throws FileNotFoundException Desired file does not exist or cannot be found.
+     */
+    fun readFileBytes(driveFile: DriveFile): ByteArray {
+        val file = findFile(driveFile) ?: throw FileNotFoundException()
+
+        return drive
+            .files()
+            .get(file.id)
+            .executeMedia()
+            .content
+            .use {
+                it.readBytes()
+            }
     }
 }

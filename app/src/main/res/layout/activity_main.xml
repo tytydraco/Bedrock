@@ -16,4 +16,10 @@
         android:text="Google Drive Sign In"
         android:id="@+id/google_drive_sign_in" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SAF Access"
+        android:id="@+id/saf" />
+
 </LinearLayout>
