@@ -17,6 +17,7 @@ import com.draco.bedrock.R
 import com.draco.bedrock.models.DriveFile
 import com.draco.bedrock.models.WorldFile
 import com.draco.bedrock.recyclers.WorldsRecyclerAdapter
+import com.draco.bedrock.repositories.constants.MinecraftConstants
 import com.draco.bedrock.repositories.constants.WorldFileType
 import com.draco.bedrock.repositories.remote.GoogleAccount
 import com.draco.bedrock.repositories.remote.GoogleDrive
@@ -48,7 +49,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     /**
      * Check if the user has selected a valid worlds folder
      */
-    fun isDocumentMinecraftWorldsFolder(file: DocumentFile) = file.name == "minecraftWorlds" && file.isDirectory
+    fun isDocumentMinecraftWorldsFolder(file: DocumentFile) =
+        file.name == MinecraftConstants.WORLDS_FOLDER_NAME && file.isDirectory
 
     /**
      * Check if the user already has SAF permissions
@@ -59,7 +61,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         return context
             .contentResolver
             .persistedUriPermissions
-            .find {it.uri.toString().contains("minecraftWorlds") }
+            .find {it.uri.toString().contains(MinecraftConstants.WORLDS_FOLDER_NAME) }
             ?.uri
     }
 
@@ -83,7 +85,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     fun getWorldNameForWorldFolder(worldFolder: DocumentFile): String? {
         val context = getApplication<Application>().applicationContext
 
-        worldFolder.listFiles().find { it.name == "levelname.txt" }?.let {
+        worldFolder.listFiles().find { it.name == MinecraftConstants.LEVEL_FILE_NAME }?.let {
             context.contentResolver.openInputStream(it.uri).use { inputStream ->
                 inputStream?.bufferedReader().use { bufferedReader ->
                     return bufferedReader?.readText()
