@@ -128,7 +128,7 @@ class GoogleDrive(
             .setName(driveFile.name)
             .setId(fileId)
             .setMimeType(driveFile.mimeType)
-            .setParents(listOf(GoogleDriveSpaces.APP_DATA_FOLDER))
+            .setParents(listOf(driveFile.parent))
 
         drive
             .files()
