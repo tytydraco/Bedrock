@@ -14,4 +14,12 @@
         android:id="@+id/download_all"
         android:title="@string/menu_action_download_all"
         app:showAsAction="withText" />
+    <item
+        android:id="@+id/delete_device_all"
+        android:title="@string/menu_action_delete_device_all"
+        app:showAsAction="withText" />
+    <item
+        android:id="@+id/delete_cloud_all"
+        android:title="@string/menu_action_delete_cloud_all"
+        app:showAsAction="withText" />
 </menu>

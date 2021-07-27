@@ -261,6 +261,34 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
+    fun deleteAllDevice() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _working.postValue(R.string.working_delete_device)
+            rootDocumentFile?.listFiles()?.forEach {
+                it?.name?.let { name ->
+                    deleteWorldFromDevice(name)
+                }
+            }
+            _working.postValue(null)
+
+            updateWorldsList()
+        }
+    }
+
+    fun deleteAllCloud(view: View) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _working.postValue(R.string.working_delete_cloud)
+            catchExceptions(view) {
+                _worldList.value?.forEach {
+                    deleteWorldFromDrive(it.id)
+                }
+            }
+            _working.postValue(null)
+
+            updateWorldsList()
+        }
+    }
+
     /**
      * Erase a world file from device
      */
