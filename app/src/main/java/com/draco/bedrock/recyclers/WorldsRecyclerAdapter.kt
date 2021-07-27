@@ -1,11 +1,16 @@
 package com.draco.bedrock.recyclers
 
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.draco.bedrock.R
 import com.draco.bedrock.databinding.RecyclerWorldItemBinding
 import com.draco.bedrock.models.WorldFile
+import com.draco.bedrock.repositories.constants.WorldFileType
 import java.util.*
 
 class WorldsRecyclerAdapter(
@@ -13,6 +18,24 @@ class WorldsRecyclerAdapter(
     var worldFileList: MutableList<WorldFile>
 ) : RecyclerView.Adapter<WorldsRecyclerAdapter.ViewHolder>() {
     class ViewHolder(val binding: RecyclerWorldItemBinding): RecyclerView.ViewHolder(binding.root)
+
+    private val accentColor: Int by lazy {
+        val typedValue = TypedValue()
+        val typedArray = context.obtainStyledAttributes(typedValue.data, intArrayOf(R.attr.colorSecondary))
+        val color = typedArray.getColor(0, 0)
+        typedArray.recycle()
+
+        return@lazy color
+    }
+
+    private val defaultColor: Int by lazy {
+        val typedValue = TypedValue()
+        val typedArray = context.obtainStyledAttributes(typedValue.data, intArrayOf(R.attr.colorControlNormal))
+        val color = typedArray.getColor(0, 0)
+        typedArray.recycle()
+
+        return@lazy color
+    }
 
     override fun getItemCount() = worldFileList.size
 
@@ -28,7 +51,22 @@ class WorldsRecyclerAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val worldFile = worldFileList[position]
 
-        holder.binding.name.text = "${worldFile.name}\n${worldFile.id}\n${worldFile.type}"
+        holder.binding.name.text = worldFile.name
+
+        when (worldFile.type) {
+            WorldFileType.LOCAL -> {
+                holder.binding.statusPhone.setColorFilter(accentColor)
+                holder.binding.statusCloud.setColorFilter(defaultColor)
+            }
+            WorldFileType.REMOTE -> {
+                holder.binding.statusPhone.setColorFilter(defaultColor)
+                holder.binding.statusCloud.setColorFilter(accentColor)
+            }
+            WorldFileType.LOCAL_REMOTE -> {
+                holder.binding.statusPhone.setColorFilter(accentColor)
+                holder.binding.statusCloud.setColorFilter(accentColor)
+            }
+        }
 
         holder.binding.upload.setOnClickListener {
             uploadHook?.invoke(worldFile.id)

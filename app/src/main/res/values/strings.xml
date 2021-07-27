@@ -15,4 +15,11 @@
 
     <string name="dialog_button_okay">Okay</string>
     <string name="dialog_button_try_again">Try again</string>
+
+    <string name="desc_status_phone">Stored locally</string>
+    <string name="desc_status_cloud">Stored on the cloud</string>
+
+    <string name="desc_upload">Upload to cloud</string>
+    <string name="desc_download">Download to device</string>
+    <string name="desc_delete_cloud">Delete from cloud</string>
 </resources>

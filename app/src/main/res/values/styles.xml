@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Widget.Bedrock.ImageButton" parent="Widget.AppCompat.ImageButton">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:padding">@dimen/recycler_item_image_padding</item>
+    </style>
+
+    <style name="Bedrock.ImageView" parent="">
+        <item name="android:padding">@dimen/recycler_item_image_padding</item>
+    </style>
+</resources>
