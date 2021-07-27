@@ -24,6 +24,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.net.UnknownHostException
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
     val googleAccount = GoogleAccount(application.applicationContext)
@@ -98,7 +99,11 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         viewModelScope.launch(Dispatchers.IO) {
             _working.postValue(true)
             val localFiles = rootDocumentFile?.listFiles()
-            val driveFiles = googleDrive?.getFiles()
+            val driveFiles = try {
+                googleDrive?.getFiles()
+            } catch (e: UnknownHostException) {
+                null
+            }
 
             val files = mutableListOf<WorldFile>()
 

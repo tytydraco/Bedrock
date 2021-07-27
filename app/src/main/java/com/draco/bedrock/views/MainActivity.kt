@@ -89,8 +89,6 @@ class MainActivity : AppCompatActivity() {
             viewModel.updateWorldsList()
         }
 
-        viewModel.prepareRecycler(this, binding.worldList)
-
         viewModel.working.observe(this) {
             if (it == true)
                 loadingDialog.show()
@@ -111,6 +109,8 @@ class MainActivity : AppCompatActivity() {
                 signInFailed.show()
             }
         }
+
+        viewModel.prepareRecycler(this, binding.worldList)
 
         if (viewModel.googleAccount.account == null)
             viewModel.googleAccount.discoverAccountExplicit(explicitLoginHandler)
