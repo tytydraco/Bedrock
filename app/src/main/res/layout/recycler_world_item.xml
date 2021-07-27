@@ -38,12 +38,27 @@
                     android:contentDescription="@string/desc_status_cloud" />
             </LinearLayout>
 
-            <com.google.android.material.textview.MaterialTextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/name"
-                android:maxLines="1"
-                android:ellipsize="end" />
+                android:orientation="vertical"
+                android:layout_marginHorizontal="@dimen/recycler_item_text_horizontal_margin">
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/name"
+                    style="@style/TextAppearance.MaterialComponents.Body1"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/id"
+                    style="@style/TextAppearance.MaterialComponents.Caption"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
 
         </LinearLayout>
 

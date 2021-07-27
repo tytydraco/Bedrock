@@ -72,6 +72,7 @@ class WorldsRecyclerAdapter(
         val worldFile = worldFileList[position]
 
         holder.binding.name.text = worldFile.name
+        holder.binding.id.text = worldFile.id
 
         when (worldFile.type) {
             WorldFileType.LOCAL -> {
