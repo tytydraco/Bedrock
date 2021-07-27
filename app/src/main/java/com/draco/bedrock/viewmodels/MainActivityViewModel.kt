@@ -113,14 +113,14 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             val files = mutableListOf<WorldFile>()
 
             localFiles?.forEach {
-                val worldName = getWorldNameForWorldFolder(it)
-                val name = it.name
+                val name = getWorldNameForWorldFolder(it)?.trim()
+                val id = it.name
 
-                if (worldName != null && name != null) {
+                if (name != null && id != null) {
                     files.add(
                         WorldFile(
-                            worldName,
                             name,
+                            id,
                             WorldFileType.LOCAL
                         )
                     )
