@@ -72,6 +72,20 @@
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:id="@+id/delete_device"
+                style="@style/Widget.Bedrock.ImageButton"
+                android:src="@drawable/ic_baseline_phonelink_erase_24"
+                android:contentDescription="@string/desc_delete_device" />
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/delete_cloud"
+                style="@style/Widget.Bedrock.ImageButton"
+                android:src="@drawable/ic_baseline_cloud_off_24"
+                android:contentDescription="@string/desc_delete_cloud" />
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
                 android:id="@+id/upload"
                 style="@style/Widget.Bedrock.ImageButton"
                 android:src="@drawable/ic_baseline_upload_24"
@@ -83,20 +97,6 @@
                 style="@style/Widget.Bedrock.ImageButton"
                 android:src="@drawable/ic_baseline_download_24"
                 android:contentDescription="@string/desc_download" />
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:id="@+id/delete_device"
-                style="@style/Widget.Bedrock.ImageButton"
-                android:src="@drawable/ic_baseline_delete_24"
-                android:contentDescription="@string/desc_delete_device" />
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:id="@+id/delete_cloud"
-                style="@style/Widget.Bedrock.ImageButton"
-                android:src="@drawable/ic_baseline_cloud_off_24"
-                android:contentDescription="@string/desc_delete_cloud" />
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
