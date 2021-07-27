@@ -154,10 +154,9 @@ class GoogleDrive(
      * Delete a Google Drive file
      *
      * @param driveFile Approximate file configuration
-     * @throws FileNotFoundException Desired file does not exist or cannot be found.
      */
     fun deleteFile(driveFile: DriveFile) {
-        val file = findFile(driveFile) ?: throw FileNotFoundException()
+        val file = findFile(driveFile) ?: return
 
         drive
             .files()
@@ -202,10 +201,10 @@ class GoogleDrive(
     /**
      * @return A list of files in the Google Drive application data folder.
      */
-    fun getFiles(): List<File>? = drive
+    fun getFiles(space: String = GoogleDriveSpaces.APP_DATA_FOLDER): List<File>? = drive
         .files()
         .list()
-        .setSpaces(GoogleDriveSpaces.APP_DATA_FOLDER)
+        .setSpaces(space)
         .execute()
         .files
 

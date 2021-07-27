@@ -21,14 +21,19 @@ class MainActivity : AppCompatActivity() {
 
     private val treeHandler = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         val uri = it.data!!.data!!
-        documentFile = DocumentFile.fromTreeUri(this, uri)!!
         contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        documentFile = DocumentFile.fromTreeUri(this, uri)!!
+
+        viewModel.rootDocumentFile = documentFile
+        viewModel.updateWorldsList()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        viewModel.prepareRecycler(this, binding.worldList)
 
         binding.googleSignIn.setOnClickListener {
             viewModel.googleAccount.discoverAccountExplicit(explicitLoginHandler)
@@ -43,14 +48,6 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent()
                 .setAction(Intent.ACTION_OPEN_DOCUMENT_TREE)
             treeHandler.launch(intent)
-        }
-
-        binding.upload.setOnClickListener {
-            viewModel.uploadWorldsDriveFile(documentFile)
-        }
-
-        binding.download.setOnClickListener {
-            viewModel.extractWorldsDriveFile(documentFile, "9k7+YFYxAAA=")
         }
     }
 }
