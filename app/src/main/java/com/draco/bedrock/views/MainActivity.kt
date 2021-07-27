@@ -85,13 +85,19 @@ class MainActivity : AppCompatActivity() {
             }
             .create()
 
+        binding.swipeRefresh.setOnRefreshListener {
+            viewModel.updateWorldsList()
+        }
+
         viewModel.prepareRecycler(this, binding.worldList)
 
         viewModel.working.observe(this) {
             if (it == true)
                 loadingDialog.show()
-            else
+            else {
                 loadingDialog.dismiss()
+                binding.swipeRefresh.isRefreshing = false
+            }
         }
 
         viewModel.googleAccount.registerLoginHandler {
