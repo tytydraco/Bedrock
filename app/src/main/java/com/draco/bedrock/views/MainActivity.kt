@@ -1,22 +1,26 @@
 package com.draco.bedrock.views
 
-import android.content.Context
+import android.app.Activity
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.documentfile.provider.DocumentFile
 import com.draco.bedrock.R
 import com.draco.bedrock.databinding.ActivityMainBinding
+import com.draco.bedrock.repositories.remote.GoogleDrive
 import com.draco.bedrock.viewmodels.MainActivityViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MainActivity : AppCompatActivity() {
     private val viewModel: MainActivityViewModel by viewModels()
     private lateinit var binding: ActivityMainBinding
-    private lateinit var sharedPreferences: SharedPreferences
+
+    private lateinit var needAccessDialog: AlertDialog
+    private lateinit var badFolderDialog: AlertDialog
+    private lateinit var signInFailed: AlertDialog
+    private lateinit var driveAccessFailed: AlertDialog
 
     private val explicitLoginHandler = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         viewModel.googleAccount.handleExplicitSignIn(it)
@@ -24,21 +28,9 @@ class MainActivity : AppCompatActivity() {
 
     private val treeHandler = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         val uri = it.data!!.data!!
-        val selectedFolder = DocumentFile.fromTreeUri(this, uri)!!
 
-        if (viewModel.isDocumentMinecraftWorldsFolder(selectedFolder)) {
-            contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-
-            sharedPreferences
-                .edit()
-                .putString(getString(R.string.pref_key_uri), uri.toString())
-                .apply()
-
-            viewModel.rootDocumentFile = DocumentFile.fromTreeUri(this, uri)!!
-            viewModel.updateWorldsList()
-        } else {
-            Toast.makeText(this, "BAD FOLDER!", Toast.LENGTH_LONG).show()
-        }
+        if (!viewModel.takePersistableUri(uri))
+            badFolderDialog.show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,24 +38,66 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        sharedPreferences = getSharedPreferences(getString(R.string.pref_name), Context.MODE_PRIVATE)
+        needAccessDialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.need_access_dialog_title)
+            .setMessage(R.string.need_access_dialog_message)
+            .setCancelable(false)
+            .setPositiveButton(R.string.dialog_button_okay) { _, _ ->
+                val intent = Intent().setAction(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                treeHandler.launch(intent)
+            }
+            .create()
+
+        badFolderDialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.bad_folder_dialog_title)
+            .setMessage(R.string.bad_folder_dialog_message)
+            .setCancelable(false)
+            .setPositiveButton(R.string.dialog_button_try_again) { _, _ ->
+               needAccessDialog.show()
+            }
+            .create()
+
+        signInFailed = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.sign_in_failed_dialog_title)
+            .setMessage(R.string.sign_in_failed_dialog_message)
+            .setCancelable(false)
+            .setPositiveButton(R.string.dialog_button_try_again) { _, _ ->
+                viewModel.googleAccount.discoverAccountExplicit(explicitLoginHandler)
+            }
+            .create()
+
+        driveAccessFailed = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.drive_access_failed_dialog_title)
+            .setMessage(R.string.drive_access_failed_dialog_message)
+            .setCancelable(false)
+            .setPositiveButton(R.string.dialog_button_try_again) { _, _ ->
+                viewModel.googleDrive?.requestPermissions(this)
+            }
+            .create()
+
         viewModel.prepareRecycler(this, binding.worldList)
 
         viewModel.googleAccount.registerLoginHandler {
-            viewModel.initGoogleDrive()
-            viewModel.googleDrive?.requestPermissionsIfNecessary(this)
+            if (it != null) {
+                viewModel.initGoogleDrive()
+                viewModel.googleDrive?.requestPermissionsIfNecessary(this)
+            } else {
+                signInFailed.show()
+            }
         }
         viewModel.googleAccount.discoverAccountExplicit(explicitLoginHandler)
 
-        binding.saf.setOnClickListener {
-            val intent = Intent()
-                .setAction(Intent.ACTION_OPEN_DOCUMENT_TREE)
-            treeHandler.launch(intent)
-        }
+        if (viewModel.getPersistableUri() == null)
+            needAccessDialog.show()
+    }
 
-        viewModel.getPersistedUri()?.let {
-            viewModel.rootDocumentFile = DocumentFile.fromTreeUri(this, it)!!
-            viewModel.updateWorldsList()
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == GoogleDrive.REQUEST_CODE_CHECK_PERMISSIONS) {
+            if (resultCode != Activity.RESULT_OK) {
+                driveAccessFailed.show()
+            }
         }
     }
 }

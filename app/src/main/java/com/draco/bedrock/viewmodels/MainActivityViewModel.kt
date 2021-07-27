@@ -3,14 +3,13 @@ package com.draco.bedrock.viewmodels
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
-import android.content.SharedPreferences
+import android.content.Intent
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.draco.bedrock.R
 import com.draco.bedrock.models.DriveFile
 import com.draco.bedrock.models.WorldFile
 import com.draco.bedrock.recyclers.WorldsRecyclerAdapter
@@ -26,12 +25,15 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     val googleAccount = GoogleAccount(application.applicationContext)
     var googleDrive: GoogleDrive? = null
     var worldsRecyclerAdapter: WorldsRecyclerAdapter? = null
-    private val sharedPreferences = application.applicationContext.getSharedPreferences(
-        application.applicationContext.getString(R.string.pref_name),
-        Context.MODE_PRIVATE
-    )
 
-    lateinit var rootDocumentFile: DocumentFile
+    var rootDocumentFile: DocumentFile? = null
+
+    init {
+        getPersistableUri()?.let {
+            rootDocumentFile = DocumentFile.fromTreeUri(application.applicationContext, it)!!
+            updateWorldsList()
+        }
+    }
 
     /**
      * Check if the user has selected a valid worlds folder
@@ -41,13 +43,31 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     /**
      * Check if the user already has SAF permissions
      */
-    fun getPersistedUri(): Uri? {
+    fun getPersistableUri(): Uri? {
         val context = getApplication<Application>().applicationContext
+
         return context
             .contentResolver
             .persistedUriPermissions
             .find {it.uri.toString().contains("minecraftWorlds") }
             ?.uri
+    }
+
+    /**
+     * Store the persistable Uri and update the root document; return false if bad directory
+     */
+    fun takePersistableUri(uri: Uri): Boolean {
+        val context = getApplication<Application>().applicationContext
+
+        val selectedFolder = DocumentFile.fromTreeUri(context, uri)!!
+        if (!isDocumentMinecraftWorldsFolder(selectedFolder))
+            return false
+
+        context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        rootDocumentFile = DocumentFile.fromTreeUri(context, uri)!!
+        updateWorldsList()
+
+        return true
     }
 
     /**
@@ -58,7 +78,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         viewModelScope.launch(Dispatchers.IO) {
             val files = mutableListOf<WorldFile>()
 
-            rootDocumentFile.listFiles().forEach {
+            rootDocumentFile?.listFiles()?.forEach {
                 it.name?.let { name ->
                     files.add(WorldFile(name, WorldFileType.LOCAL))
                 }
@@ -138,7 +158,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     fun uploadWorldToDrive(worldName: String) {
         val context = getApplication<Application>().applicationContext
 
-        rootDocumentFile.listFiles().find { it.name == worldName }?.let {
+        rootDocumentFile?.listFiles()?.find { it.name == worldName }?.let {
             val driveFile = DriveFile(name = worldName)
             val zipBytes = DocumentFileZip(context, it).zip()
             googleDrive?.createFileIfNecessary(driveFile)
@@ -150,8 +170,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * Erases the subdirectory contents; creates one if it does not yet exist
      */
     private fun recreateSubDirectoryIfNecessary(subDirectoryName: String): DocumentFile? {
-        rootDocumentFile.listFiles().find { it.name == subDirectoryName }?.delete()
-        return rootDocumentFile.createDirectory(subDirectoryName)
+        rootDocumentFile?.listFiles()?.find { it.name == subDirectoryName }?.delete()
+        return rootDocumentFile?.createDirectory(subDirectoryName)
     }
 
     /**

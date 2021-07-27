@@ -1,6 +1,18 @@
 <resources>
     <string name="app_name">Bedrock</string>
 
-    <string name="pref_name">shared_preferences</string>
-    <string name="pref_key_uri">uri</string>
+    <string name="need_access_dialog_title">Need access</string>
+    <string name="need_access_dialog_message">This app needs access to your "minecraftWorlds" folder. Navigate to /sdcard/games/com.mojang/minecraftWorlds, and select it.</string>
+
+    <string name="bad_folder_dialog_title">Bad folder</string>
+    <string name="bad_folder_dialog_message">This folder doesn\'t look right. Make sure you select the correct directory.</string>
+
+    <string name="sign_in_failed_dialog_title">Sign-in failed</string>
+    <string name="sign_in_failed_dialog_message">Failed to sign-in to Google.</string>
+
+    <string name="drive_access_failed_dialog_title">Google Drive access failed</string>
+    <string name="drive_access_failed_dialog_message">Failed to get access to Google Drive.</string>
+
+    <string name="dialog_button_okay">Okay</string>
+    <string name="dialog_button_try_again">Try again</string>
 </resources>
