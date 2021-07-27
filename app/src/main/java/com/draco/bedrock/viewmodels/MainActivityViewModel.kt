@@ -233,6 +233,34 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
+    fun uploadAll(view: View) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _working.postValue(true)
+            catchExceptions(view) {
+                _worldList.value?.forEach {
+                    uploadWorldToDrive(it.id)
+                }
+            }
+            _working.postValue(false)
+
+            updateWorldsList()
+        }
+    }
+
+    fun downloadAll(view: View) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _working.postValue(true)
+            catchExceptions(view) {
+                _worldList.value?.forEach {
+                    downloadWorldFromDrive(it.id)
+                }
+            }
+            _working.postValue(false)
+
+            updateWorldsList()
+        }
+    }
+
     /**
      * Erase a world file from device
      */

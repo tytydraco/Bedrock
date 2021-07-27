@@ -57,6 +57,8 @@
     <string name="pref_licenses_key" translatable="false">licenses</string>
 
     <string name="menu_action_settings">Settings</string>
+    <string name="menu_action_upload_all">Upload all</string>
+    <string name="menu_action_download_all">Download all</string>
 
     <string name="no_worlds">No worlds found :(</string>
 </resources>

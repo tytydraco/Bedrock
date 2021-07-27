@@ -145,6 +145,14 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
                 true
             }
+            R.id.upload_all -> {
+                viewModel.uploadAll(binding.worldList)
+                true
+            }
+            R.id.download_all -> {
+                viewModel.downloadAll(binding.worldList)
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
