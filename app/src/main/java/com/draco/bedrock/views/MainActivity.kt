@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.ProgressBar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -18,6 +19,7 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: MainActivityViewModel by viewModels()
     private lateinit var binding: ActivityMainBinding
 
+    private lateinit var loadingDialog: AlertDialog
     private lateinit var needAccessDialog: AlertDialog
     private lateinit var badFolderDialog: AlertDialog
     private lateinit var signInFailed: AlertDialog
@@ -38,6 +40,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        loadingDialog = MaterialAlertDialogBuilder(this)
+            .setView(R.layout.dialog_progress)
+            .setTitle(R.string.loading_dialog_title)
+            .setMessage(R.string.loading_dialog_message)
+            .setCancelable(false)
+            .create()
 
         needAccessDialog = MaterialAlertDialogBuilder(this)
             .setTitle(R.string.need_access_dialog_title)
@@ -79,13 +88,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.prepareRecycler(this, binding.worldList)
 
         viewModel.working.observe(this) {
-            if (it == true) {
-                binding.progress.visibility = View.VISIBLE
-                binding.worldList.visibility = View.GONE
-            } else {
-                binding.progress.visibility = View.GONE
-                binding.worldList.visibility = View.VISIBLE
-            }
+            if (it == true)
+                loadingDialog.show()
+            else
+                loadingDialog.dismiss()
         }
 
         viewModel.googleAccount.registerLoginHandler {

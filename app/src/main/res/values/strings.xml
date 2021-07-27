@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Bedrock</string>
 
+    <string name="loading_dialog_title">Loading</string>
+    <string name="loading_dialog_message">Please be patient</string>
+
     <string name="need_access_dialog_title">Need access</string>
     <string name="need_access_dialog_message">This app needs access to your "minecraftWorlds" folder. Navigate to /sdcard/games/com.mojang/minecraftWorlds, and select it.</string>
 
