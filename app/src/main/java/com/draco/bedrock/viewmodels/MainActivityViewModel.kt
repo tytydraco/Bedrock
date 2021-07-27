@@ -104,7 +104,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             val localFiles = rootDocumentFile?.listFiles()
             val driveFiles = try {
                 googleDrive?.getFiles()
-            } catch (e: UnknownHostException) {
+            } catch (e: Exception) {
                 null
             }
 
