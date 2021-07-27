@@ -31,7 +31,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     init {
         getPersistableUri()?.let {
             rootDocumentFile = DocumentFile.fromTreeUri(application.applicationContext, it)!!
-            updateWorldsList()
         }
     }
 
@@ -70,6 +69,20 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         return true
     }
 
+    fun getWorldNameForWorldFolder(worldFolder: DocumentFile): String? {
+        val context = getApplication<Application>().applicationContext
+
+        worldFolder.listFiles().find { it.name == "levelname.txt" }?.let {
+            context.contentResolver.openInputStream(it.uri).use { inputStream ->
+                inputStream?.bufferedReader().use { bufferedReader ->
+                    return bufferedReader?.readText()
+                }
+            }
+        }
+
+        return null
+    }
+
     /**
      * Update the recycler adapter with all of our worlds
      */
@@ -79,16 +92,22 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             val files = mutableListOf<WorldFile>()
 
             rootDocumentFile?.listFiles()?.forEach {
-                it.name?.let { name ->
-                    files.add(WorldFile(name, WorldFileType.LOCAL))
-                }
+                files.add(WorldFile(
+                    getWorldNameForWorldFolder(it)!!,
+                    it.name!!,
+                    WorldFileType.LOCAL
+                ))
             }
 
             googleDrive?.getFiles()?.forEach {
-                val matchingLocalFile = files.find { localFile -> localFile.name == it.name }
+                val matchingLocalFile = files.find { localFile -> localFile.id == it.name }
 
                 if (matchingLocalFile == null)
-                    files.add(WorldFile(it.name, WorldFileType.REMOTE))
+                    files.add(WorldFile(
+                        it.description ?: "?",
+                        it.name ?: "?",
+                        WorldFileType.REMOTE
+                    ))
                 else
                     matchingLocalFile.type = WorldFileType.LOCAL_REMOTE
             }
@@ -136,8 +155,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     /**
      * Erase a world file from Google Drive
      */
-    fun deleteWorldFromDrive(worldName: String) {
-        val driveFile = DriveFile(name = worldName)
+    fun deleteWorldFromDrive(worldId: String) {
+        val driveFile = DriveFile(name = worldId)
         googleDrive?.deleteFile(driveFile)
     }
 
@@ -155,11 +174,14 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     /**
      * Upload the Google Drive world file
      */
-    fun uploadWorldToDrive(worldName: String) {
+    fun uploadWorldToDrive(worldId: String) {
         val context = getApplication<Application>().applicationContext
 
-        rootDocumentFile?.listFiles()?.find { it.name == worldName }?.let {
-            val driveFile = DriveFile(name = worldName)
+        rootDocumentFile?.listFiles()?.find { it.name == worldId }?.let {
+            val driveFile = DriveFile(
+                name = worldId,
+                description = getWorldNameForWorldFolder(it)
+            )
             val zipBytes = DocumentFileZip(context, it).zip()
             googleDrive?.createFileIfNecessary(driveFile)
             googleDrive?.writeFileBytes(driveFile, zipBytes)
@@ -177,13 +199,13 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     /**
      * Extracts the Google Drive world file
      */
-    fun downloadWorldFromDrive(worldName: String) {
+    fun downloadWorldFromDrive(worldId: String) {
         val context = getApplication<Application>().applicationContext
 
-        val driveFile = DriveFile(name = worldName)
+        val driveFile = DriveFile(name = worldId)
         if (googleDrive?.fileExists(driveFile) == true) {
             googleDrive?.readFileBytes(driveFile)?.let {
-                recreateSubDirectoryIfNecessary(worldName)?.let { subFolder ->
+                recreateSubDirectoryIfNecessary(worldId)?.let { subFolder ->
                     DocumentFileZip(context, subFolder).unZip(it)
                 }
             }

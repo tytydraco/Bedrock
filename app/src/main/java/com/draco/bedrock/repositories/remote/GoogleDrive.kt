@@ -33,6 +33,7 @@ class GoogleDrive(
          * Request code to be used when requesting Google Drive permissions
          */
         const val REQUEST_CODE_CHECK_PERMISSIONS = 102
+        const val LIST_FILES_FIELDS = "files/id,files/kind,files/mimeType,files/name,files/description"
 
         /**
          * Google permission scopes that we need to grant
@@ -68,10 +69,10 @@ class GoogleDrive(
      *
      * @return A valid Google Drive file id string
      */
-    private fun generateId() = drive
+    private fun generateId(space: String = GoogleDriveSpaces.APP_DATA_FOLDER) = drive
         .files()
         .generateIds()
-        .setSpace(GoogleDriveSpaces.APP_DATA_FOLDER)
+        .setSpace(space)
         .setCount(1)
         .execute()
         .ids[0]
@@ -122,10 +123,11 @@ class GoogleDrive(
      */
     fun createFile(driveFile: DriveFile): String {
         /* Generate a file id */
-        val fileId = driveFile.id ?: generateId()
+        val fileId = driveFile.id ?: generateId(driveFile.parent)
 
         val file = File()
             .setName(driveFile.name)
+            .setDescription(driveFile.description)
             .setId(fileId)
             .setMimeType(driveFile.mimeType)
             .setParents(listOf(driveFile.parent))
@@ -169,12 +171,13 @@ class GoogleDrive(
      *
      * @param file The Google Drive file
      * @param driveFile Approximate file configuration
-     * @return True if the file id or name match
+     * @return True if the file id, name, or description match
      */
     private fun fileMatchesFileConfig(file: File, driveFile: DriveFile) =
         when {
             driveFile.id != null -> file.id == driveFile.id
             driveFile.name != null -> file.name == driveFile.name
+            driveFile.description != null -> file.description == driveFile.description
             else -> false
         }
 
@@ -201,12 +204,28 @@ class GoogleDrive(
     /**
      * @return A list of files in the Google Drive application data folder.
      */
-    fun getFiles(space: String = GoogleDriveSpaces.APP_DATA_FOLDER): List<File>? = drive
-        .files()
-        .list()
-        .setSpaces(space)
-        .execute()
-        .files
+    fun getFiles(space: String = GoogleDriveSpaces.APP_DATA_FOLDER): List<File>? {
+        val files = mutableListOf<File>()
+
+        var nextPageToken: String? = null
+        while (true) {
+            val request = drive
+                .files()
+                .list()
+                .setSpaces(space)
+                .setFields(LIST_FILES_FIELDS)
+                .execute().also {
+                    nextPageToken?.let { token -> it.nextPageToken = token }
+                }
+            files.addAll(request.files)
+
+            if (request.nextPageToken == null)
+                break
+            nextPageToken = request.nextPageToken
+        }
+
+        return files
+    }
 
     /**
      * Write raw byte stream content to an **existing** Google Drive file.
@@ -222,6 +241,7 @@ class GoogleDrive(
          */
         val newFile = File()
             .setName(file.name)
+            .setDescription(file.description)
             .setMimeType(file.mimeType)
             .setParents(file.parents)
 

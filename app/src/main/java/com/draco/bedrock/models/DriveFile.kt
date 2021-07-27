@@ -9,6 +9,7 @@ import com.draco.bedrock.repositories.constants.GoogleDriveSpaces
  */
 data class DriveFile(
     var name: String? = null,
+    var description: String? = null,
     var mimeType: String? = null,
     var id: String? = null,
     var parent: String = GoogleDriveSpaces.APP_DATA_FOLDER

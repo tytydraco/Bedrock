@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.draco.bedrock.databinding.RecyclerWorldItemBinding
 import com.draco.bedrock.models.WorldFile
+import java.util.*
 
 class WorldsRecyclerAdapter(
     private val context: Context,
@@ -26,18 +27,19 @@ class WorldsRecyclerAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val worldFile = worldFileList[position]
-        holder.binding.name.text = "${worldFile.name} | ${worldFile.type}"
+
+        holder.binding.name.text = "${worldFile.name}\n${worldFile.id}\n${worldFile.type}"
 
         holder.binding.upload.setOnClickListener {
-            uploadHook?.invoke(worldFile.name)
+            uploadHook?.invoke(worldFile.id)
         }
 
         holder.binding.download.setOnClickListener {
-            downloadHook?.invoke(worldFile.name)
+            downloadHook?.invoke(worldFile.id)
         }
 
         holder.binding.deleteCloud.setOnClickListener {
-            deleteCloudHook?.invoke(worldFile.name)
+            deleteCloudHook?.invoke(worldFile.id)
         }
     }
 }

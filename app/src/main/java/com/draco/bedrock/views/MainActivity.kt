@@ -81,6 +81,9 @@ class MainActivity : AppCompatActivity() {
             if (it != null) {
                 viewModel.initGoogleDrive()
                 viewModel.googleDrive?.requestPermissionsIfNecessary(this)
+
+                if (viewModel.googleDrive?.hasPermissions() == true)
+                    viewModel.updateWorldsList()
             } else {
                 signInFailed.show()
             }
@@ -95,9 +98,10 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == GoogleDrive.REQUEST_CODE_CHECK_PERMISSIONS) {
-            if (resultCode != Activity.RESULT_OK) {
+            if (resultCode == Activity.RESULT_OK)
+                viewModel.updateWorldsList()
+            else
                 driveAccessFailed.show()
-            }
         }
     }
 }
