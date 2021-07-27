@@ -1,8 +1,6 @@
 package com.draco.bedrock.recyclers
 
 import android.content.Context
-import android.content.res.ColorStateList
-import android.graphics.Color
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -61,6 +59,7 @@ class WorldsRecyclerAdapter(
 
     var uploadHook: ((view: View, worldName: String) -> Unit)? = null
     var downloadHook: ((view: View, worldName: String) -> Unit)? = null
+    var deleteDeviceHook: ((view: View, worldName: String) -> Unit)? = null
     var deleteCloudHook: ((view: View, worldName: String) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -96,13 +95,19 @@ class WorldsRecyclerAdapter(
         }
 
         holder.binding.download.setOnClickListener {
-            createConfirmDialog(R.string.desc_download) {
+            createConfirmDialog(R.string.confirm_dialog_download_message) {
                 downloadHook?.invoke(recycler, worldFile.id)
             }
         }
 
+        holder.binding.deleteDevice.setOnClickListener {
+            createConfirmDialog(R.string.confirm_dialog_delete_device_message) {
+                deleteDeviceHook?.invoke(recycler, worldFile.id)
+            }
+        }
+
         holder.binding.deleteCloud.setOnClickListener {
-            createConfirmDialog(R.string.confirm_dialog_delete_message) {
+            createConfirmDialog(R.string.confirm_dialog_delete_cloud_message) {
                 deleteCloudHook?.invoke(recycler, worldFile.id)
             }
         }

@@ -28,7 +28,8 @@
     <string name="confirm_dialog_title">Confirm changes</string>
     <string name="confirm_dialog_upload_message">Are you sure you want to upload your local files to the cloud?</string>
     <string name="confirm_dialog_download_message">Are you sure you want to replace your local files with the cloud files?</string>
-    <string name="confirm_dialog_delete_message">Are you sure you want to erase the cloud files?</string>
+    <string name="confirm_dialog_delete_device_message">Are you sure you want to erase the device files?</string>
+    <string name="confirm_dialog_delete_cloud_message">Are you sure you want to erase the cloud files?</string>
 
     <string name="dialog_button_okay">Okay</string>
     <string name="dialog_button_yes">Yes</string>
@@ -40,6 +41,7 @@
 
     <string name="desc_upload">Upload to cloud</string>
     <string name="desc_download">Download to device</string>
+    <string name="desc_delete_device">Delete from device</string>
     <string name="desc_delete_cloud">Delete from cloud</string>
 
     <string name="pref_developer_title">Developer</string>

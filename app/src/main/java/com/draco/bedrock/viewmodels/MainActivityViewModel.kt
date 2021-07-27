@@ -207,6 +207,15 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                     }
                 }
 
+                deleteDeviceHook = { view, worldName ->
+                    viewModelScope.launch(Dispatchers.IO) {
+                        catchExceptions(view) {
+                            deleteWorldFromDevice(worldName)
+                            updateWorldsList()
+                        }
+                    }
+                }
+
                 deleteCloudHook = { view, worldName ->
                     viewModelScope.launch(Dispatchers.IO) {
                         catchExceptions(view) {
@@ -222,6 +231,15 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             adapter = worldsRecyclerAdapter
             layoutManager = LinearLayoutManager(context)
         }
+    }
+
+    /**
+     * Erase a world file from device
+     */
+    fun deleteWorldFromDevice(worldId: String) {
+        _working.postValue(true)
+        rootDocumentFile?.listFiles()?.find { it.name == worldId }?.delete()
+        _working.postValue(false)
     }
 
     /**

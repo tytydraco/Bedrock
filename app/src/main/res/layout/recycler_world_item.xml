@@ -86,6 +86,13 @@
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:id="@+id/delete_device"
+                style="@style/Widget.Bedrock.ImageButton"
+                android:src="@drawable/ic_baseline_delete_24"
+                android:contentDescription="@string/desc_delete_device" />
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
                 android:id="@+id/delete_cloud"
                 style="@style/Widget.Bedrock.ImageButton"
                 android:src="@drawable/ic_baseline_cloud_off_24"
