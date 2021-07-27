@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.download.setOnClickListener {
-            viewModel.extractWorldsDriveFile(documentFile)
+            viewModel.extractWorldsDriveFile(documentFile, "9k7+YFYxAAA=")
         }
     }
 }

@@ -1,10 +1,11 @@
 package com.draco.bedrock.viewmodels
 
 import android.app.Application
+import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.draco.bedrock.repositories.constants.GoogleDriveFiles
+import com.draco.bedrock.models.DriveFile
 import com.draco.bedrock.repositories.remote.GoogleAccount
 import com.draco.bedrock.repositories.remote.GoogleDrive
 import com.draco.bedrock.utils.DocumentFileZip
@@ -32,23 +33,41 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     fun uploadWorldsDriveFile(root: DocumentFile) {
         val context = getApplication<Application>().applicationContext
 
-        viewModelScope.launch {
-            val zipBytes = DocumentFileZip(context, root).zip()
-            googleDrive?.createFileIfNecessary(GoogleDriveFiles.cloudWorldZip)
-            googleDrive?.writeFileBytes(GoogleDriveFiles.cloudWorldZip, zipBytes)
+        viewModelScope.launch(Dispatchers.IO) {
+            /* Zip all folders in the minecraftWorlds folder */
+            for (file in root.listFiles()) {
+                if (!file.isDirectory)
+                    continue
+
+                val driveFile = DriveFile(name = file.name)
+                val zipBytes = DocumentFileZip(context, file).zip()
+                googleDrive?.createFileIfNecessary(driveFile)
+                googleDrive?.writeFileBytes(driveFile, zipBytes)
+            }
         }
+    }
+
+    /**
+     * Erases the subdirectory contents; creates one if it does not yet exist
+     */
+    private fun recreateSubDirectoryIfNecessary(root: DocumentFile, subDirectoryName: String): DocumentFile? {
+        root.listFiles().find { it.name == subDirectoryName }?.delete()
+        return root.createDirectory(subDirectoryName)
     }
 
     /**
      * Extracts the Google Drive world file
      */
-    fun extractWorldsDriveFile(root: DocumentFile) {
+    fun extractWorldsDriveFile(root: DocumentFile, worldFolderName: String) {
         val context = getApplication<Application>().applicationContext
 
         viewModelScope.launch(Dispatchers.IO) {
-            if (googleDrive?.fileExists(GoogleDriveFiles.cloudWorldZip) == true) {
-                val zipBytes = googleDrive?.readFileBytes(GoogleDriveFiles.cloudWorldZip)?.let {
-                    DocumentFileZip(context, root).unZip(it)
+            val driveFile = DriveFile(name = worldFolderName)
+            if (googleDrive?.fileExists(driveFile) == true) {
+                googleDrive?.readFileBytes(driveFile)?.let {
+                    recreateSubDirectoryIfNecessary(root, worldFolderName)?.let { subFolder ->
+                        DocumentFileZip(context, subFolder).unZip(it)
+                    }
                 }
             }
         }
