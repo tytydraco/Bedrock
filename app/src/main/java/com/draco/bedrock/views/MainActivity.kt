@@ -91,9 +91,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel.working.observe(this) {
-            if (it == true)
+            if (it != null) {
+                loadingDialog.setMessage(getString(it))
                 loadingDialog.show()
-            else {
+            } else {
                 loadingDialog.dismiss()
                 binding.swipeRefresh.isRefreshing = false
             }

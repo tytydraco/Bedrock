@@ -34,8 +34,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     var rootDocumentFile: DocumentFile? = null
 
-    private val _working = MutableLiveData<Boolean>()
-    val working: LiveData<Boolean> = _working
+    private val _working = MutableLiveData<Int?>()
+    val working: LiveData<Int?> = _working
 
     private val _worldList = MutableLiveData<List<WorldFile>>()
     val worldList: LiveData<List<WorldFile>> = _worldList
@@ -102,7 +102,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     @SuppressLint("NotifyDataSetChanged")
     fun updateWorldsList() {
         viewModelScope.launch(Dispatchers.IO) {
-            _working.postValue(true)
+            _working.postValue(R.string.working_updating_world_list)
             val localFiles = rootDocumentFile?.listFiles()
             val driveFiles = try {
                 googleDrive?.getFiles()
@@ -156,7 +156,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 worldsRecyclerAdapter?.notifyDataSetChanged()
             }
 
-            _working.postValue(false)
+            _working.postValue(null)
         }
     }
 
@@ -170,7 +170,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             val context = getApplication<Application>().applicationContext
 
             e.printStackTrace()
-            _working.postValue(false)
+            _working.postValue(null)
 
             val error = context.getString(R.string.snackbar_exception)
             viewModelScope.launch(Dispatchers.Main) {
@@ -235,13 +235,13 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     fun uploadAll(view: View) {
         viewModelScope.launch(Dispatchers.IO) {
-            _working.postValue(true)
+            _working.postValue(R.string.working_uploading)
             catchExceptions(view) {
                 _worldList.value?.forEach {
                     uploadWorldToDrive(it.id)
                 }
             }
-            _working.postValue(false)
+            _working.postValue(null)
 
             updateWorldsList()
         }
@@ -249,13 +249,13 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     fun downloadAll(view: View) {
         viewModelScope.launch(Dispatchers.IO) {
-            _working.postValue(true)
+            _working.postValue(R.string.working_downloading)
             catchExceptions(view) {
                 _worldList.value?.forEach {
                     downloadWorldFromDrive(it.id)
                 }
             }
-            _working.postValue(false)
+            _working.postValue(null)
 
             updateWorldsList()
         }
@@ -265,21 +265,19 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * Erase a world file from device
      */
     fun deleteWorldFromDevice(worldId: String) {
-        _working.postValue(true)
+        _working.postValue(R.string.working_delete_device)
         rootDocumentFile?.listFiles()?.find { it.name == worldId }?.delete()
-        _working.postValue(false)
+        _working.postValue(null)
     }
 
     /**
      * Erase a world file from Google Drive
      */
     fun deleteWorldFromDrive(worldId: String) {
-        _working.postValue(true)
-
+        _working.postValue(R.string.working_delete_cloud)
         val driveFile = DriveFile(name = worldId)
         googleDrive?.deleteFile(driveFile)
-
-        _working.postValue(false)
+        _working.postValue(null)
     }
 
     /**
@@ -299,19 +297,21 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     fun uploadWorldToDrive(worldId: String) {
         val context = getApplication<Application>().applicationContext
 
-        _working.postValue(true)
+        _working.postValue(R.string.working_uploading)
 
         rootDocumentFile?.listFiles()?.find { it.name == worldId }?.let {
             val driveFile = DriveFile(
                 name = worldId,
                 description = getWorldNameForWorldFolder(it)
             )
+
+            _working.postValue(R.string.working_zipping)
             val zipBytes = DocumentFileZip(context, it).zip()
             googleDrive?.createFileIfNecessary(driveFile)
             googleDrive?.writeFileBytes(driveFile, zipBytes)
         }
 
-        _working.postValue(false)
+        _working.postValue(null)
     }
 
     /**
@@ -328,17 +328,18 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     fun downloadWorldFromDrive(worldId: String) {
         val context = getApplication<Application>().applicationContext
 
-        _working.postValue(true)
+        _working.postValue(R.string.working_downloading)
 
         val driveFile = DriveFile(name = worldId)
         if (googleDrive?.fileExists(driveFile) == true) {
             googleDrive?.readFileBytes(driveFile)?.let {
                 recreateSubDirectoryIfNecessary(worldId)?.let { subFolder ->
+                    _working.postValue(R.string.working_unzipping)
                     DocumentFileZip(context, subFolder).unZip(it)
                 }
             }
         }
 
-        _working.postValue(false)
+        _working.postValue(null)
     }
 }
