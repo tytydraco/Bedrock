@@ -75,4 +75,7 @@
     <string name="working_zipping">Zipping world files</string>
     <string name="working_unzipping">Unzipping world files</string>
     <string name="working_updating_world_list">Refreshing world list</string>
+
+    <string name="pref_file">preferences</string>
+    <string name="pref_key_verified">verified</string>
 </resources>
