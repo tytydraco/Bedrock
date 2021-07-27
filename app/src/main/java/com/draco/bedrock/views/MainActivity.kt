@@ -1,14 +1,10 @@
 package com.draco.bedrock.views
 
 import android.app.Activity
-import android.app.Application
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.View
-import android.widget.ProgressBar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -33,10 +29,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.googleAccount.handleExplicitSignIn(it)
     }
 
-    private val treeHandler = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        val uri = it.data!!.data!!
+    private val openWorldsFolderHandler = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        val uri = it.data?.data
 
-        if (!viewModel.takePersistableUri(uri))
+        if (uri == null || !viewModel.takePersistableUri(uri))
             badFolderDialog.show()
     }
 
@@ -58,7 +54,7 @@ class MainActivity : AppCompatActivity() {
             .setCancelable(false)
             .setPositiveButton(R.string.dialog_button_okay) { _, _ ->
                 val intent = Intent().setAction(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                treeHandler.launch(intent)
+                openWorldsFolderHandler.launch(intent)
             }
             .create()
 
