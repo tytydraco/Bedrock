@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="recycler_item_image_padding">12dp</dimen>
+    <dimen name="recycler_item_margin">12dp</dimen>
+    <dimen name="card_corder_radius">12dp</dimen>
     <dimen name="progress_horizontal_padding">12dp</dimen>
 </resources>
