@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -108,6 +109,13 @@ class MainActivity : AppCompatActivity() {
             } else {
                 signInFailed.show()
             }
+        }
+
+        viewModel.worldList.observe(this) {
+            binding.noWorlds.visibility = if (it.isNullOrEmpty())
+                 View.VISIBLE
+            else
+                View.GONE
         }
 
         viewModel.prepareRecycler(this, binding.worldList)

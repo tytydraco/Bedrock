@@ -11,4 +11,22 @@
             android:layout_height="match_parent"
             android:id="@+id/world_list" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/no_worlds"
+        android:visibility="gone"
+        android:gravity="center"
+        android:orientation="vertical">
+        <ImageView
+            android:layout_width="@dimen/no_worlds_image_size"
+            android:layout_height="@dimen/no_worlds_image_size"
+            android:src="@drawable/ic_baseline_warning_24"
+            android:contentDescription="@string/no_worlds" />
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/TextAppearance.MaterialComponents.Subtitle1"
+            android:text="@string/no_worlds" />
+    </LinearLayout>
 </RelativeLayout>

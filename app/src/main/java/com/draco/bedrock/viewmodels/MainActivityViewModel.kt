@@ -36,6 +36,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     private val _working = MutableLiveData<Boolean>()
     val working: LiveData<Boolean> = _working
 
+    private val _worldList = MutableLiveData<List<WorldFile>>()
+    val worldList: LiveData<List<WorldFile>> = _worldList
+
     init {
         getPersistableUri()?.let {
             rootDocumentFile = DocumentFile.fromTreeUri(application.applicationContext, it)!!
@@ -108,28 +111,46 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             val files = mutableListOf<WorldFile>()
 
             localFiles?.forEach {
-                files.add(WorldFile(
-                    getWorldNameForWorldFolder(it)!!,
-                    it.name!!,
-                    WorldFileType.LOCAL
-                ))
+                val worldName = getWorldNameForWorldFolder(it)
+                val name = it.name
+
+                if (worldName != null && name != null) {
+                    files.add(
+                        WorldFile(
+                            worldName,
+                            name,
+                            WorldFileType.LOCAL
+                        )
+                    )
+                }
             }
 
             driveFiles?.forEach {
                 val matchingLocalFile = files.find { localFile -> localFile.id == it.name }
 
-                if (matchingLocalFile == null)
-                    files.add(WorldFile(
-                        it.description ?: "?",
-                        it.name ?: "?",
-                        WorldFileType.REMOTE
-                    ))
-                else
+                if (matchingLocalFile == null) {
+                    val name = it.description
+                    val id = it.name
+
+                    if (name != null && id != null) {
+                        files.add(
+                            WorldFile(
+                                name,
+                                id,
+                                WorldFileType.REMOTE
+                            )
+                        )
+                    }
+                } else
                     matchingLocalFile.type = WorldFileType.LOCAL_REMOTE
             }
 
+            val newWorlds = files.sortedBy { it.name }.toMutableList()
+
+            _worldList.postValue(newWorlds)
+
             withContext(Dispatchers.Main) {
-                worldsRecyclerAdapter?.worldFileList = files.sortedBy { it.name }.toMutableList()
+                worldsRecyclerAdapter?.worldFileList = newWorlds
                 worldsRecyclerAdapter?.notifyDataSetChanged()
             }
 
