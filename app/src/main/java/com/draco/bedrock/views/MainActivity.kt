@@ -3,6 +3,7 @@ package com.draco.bedrock.views
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -76,6 +77,16 @@ class MainActivity : AppCompatActivity() {
             .create()
 
         viewModel.prepareRecycler(this, binding.worldList)
+
+        viewModel.working.observe(this) {
+            if (it == true) {
+                binding.progress.visibility = View.VISIBLE
+                binding.worldList.visibility = View.GONE
+            } else {
+                binding.progress.visibility = View.GONE
+                binding.worldList.visibility = View.VISIBLE
+            }
+        }
 
         viewModel.googleAccount.registerLoginHandler {
             if (it != null) {

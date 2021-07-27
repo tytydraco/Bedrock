@@ -7,6 +7,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,6 +29,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     var worldsRecyclerAdapter: WorldsRecyclerAdapter? = null
 
     var rootDocumentFile: DocumentFile? = null
+
+    private val _working = MutableLiveData<Boolean>()
+    val working: LiveData<Boolean> = _working
 
     init {
         getPersistableUri()?.let {
@@ -89,9 +94,13 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     @SuppressLint("NotifyDataSetChanged")
     fun updateWorldsList() {
         viewModelScope.launch(Dispatchers.IO) {
+            _working.postValue(true)
+            val localFiles = rootDocumentFile?.listFiles()
+            val driveFiles = googleDrive?.getFiles()
+
             val files = mutableListOf<WorldFile>()
 
-            rootDocumentFile?.listFiles()?.forEach {
+            localFiles?.forEach {
                 files.add(WorldFile(
                     getWorldNameForWorldFolder(it)!!,
                     it.name!!,
@@ -99,7 +108,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 ))
             }
 
-            googleDrive?.getFiles()?.forEach {
+            driveFiles?.forEach {
                 val matchingLocalFile = files.find { localFile -> localFile.id == it.name }
 
                 if (matchingLocalFile == null)
@@ -116,6 +125,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 worldsRecyclerAdapter?.worldFileList = files.sortedBy { it.name }.toMutableList()
                 worldsRecyclerAdapter?.notifyDataSetChanged()
             }
+
+            _working.postValue(false)
         }
     }
 
@@ -156,8 +167,12 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * Erase a world file from Google Drive
      */
     fun deleteWorldFromDrive(worldId: String) {
+        _working.postValue(true)
+
         val driveFile = DriveFile(name = worldId)
         googleDrive?.deleteFile(driveFile)
+
+        _working.postValue(false)
     }
 
     /**
@@ -177,6 +192,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     fun uploadWorldToDrive(worldId: String) {
         val context = getApplication<Application>().applicationContext
 
+        _working.postValue(true)
+
         rootDocumentFile?.listFiles()?.find { it.name == worldId }?.let {
             val driveFile = DriveFile(
                 name = worldId,
@@ -186,6 +203,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             googleDrive?.createFileIfNecessary(driveFile)
             googleDrive?.writeFileBytes(driveFile, zipBytes)
         }
+
+        _working.postValue(false)
     }
 
     /**
@@ -202,6 +221,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     fun downloadWorldFromDrive(worldId: String) {
         val context = getApplication<Application>().applicationContext
 
+        _working.postValue(true)
+
         val driveFile = DriveFile(name = worldId)
         if (googleDrive?.fileExists(driveFile) == true) {
             googleDrive?.readFileBytes(driveFile)?.let {
@@ -210,5 +231,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 }
             }
         }
+
+        _working.postValue(false)
     }
 }
