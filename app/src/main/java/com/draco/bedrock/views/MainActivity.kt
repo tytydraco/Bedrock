@@ -115,7 +115,9 @@ class MainActivity : AppCompatActivity() {
                 signInFailed.show()
             }
         }
-        viewModel.googleAccount.discoverAccountExplicit(explicitLoginHandler)
+
+        if (viewModel.googleAccount.account == null)
+            viewModel.googleAccount.discoverAccountExplicit(explicitLoginHandler)
 
         if (viewModel.getPersistableUri() == null)
             needAccessDialog.show()

@@ -136,25 +136,27 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * Prepare the recycler view
      */
     fun prepareRecycler(context: Context, recycler: RecyclerView) {
-        worldsRecyclerAdapter = WorldsRecyclerAdapter(context, mutableListOf()).apply {
-            uploadHook = {
-                viewModelScope.launch(Dispatchers.IO) {
-                    uploadWorldToDrive(it)
-                    updateWorldsList()
+        if (worldsRecyclerAdapter == null) {
+            worldsRecyclerAdapter = WorldsRecyclerAdapter(context, mutableListOf()).apply {
+                uploadHook = {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        uploadWorldToDrive(it)
+                        updateWorldsList()
+                    }
                 }
-            }
 
-            downloadHook = {
-                viewModelScope.launch(Dispatchers.IO) {
-                    downloadWorldFromDrive(it)
-                    updateWorldsList()
+                downloadHook = {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        downloadWorldFromDrive(it)
+                        updateWorldsList()
+                    }
                 }
-            }
 
-            deleteCloudHook = {
-                viewModelScope.launch(Dispatchers.IO) {
-                    deleteWorldFromDrive(it)
-                    updateWorldsList()
+                deleteCloudHook = {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        deleteWorldFromDrive(it)
+                        updateWorldsList()
+                    }
                 }
             }
         }
