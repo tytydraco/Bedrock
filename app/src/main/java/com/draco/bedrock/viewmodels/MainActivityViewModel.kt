@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.view.View
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -20,11 +21,10 @@ import com.draco.bedrock.repositories.constants.WorldFileType
 import com.draco.bedrock.repositories.remote.GoogleAccount
 import com.draco.bedrock.repositories.remote.GoogleDrive
 import com.draco.bedrock.utils.DocumentFileZip
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.net.UnknownHostException
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
     val googleAccount = GoogleAccount(application.applicationContext)
@@ -159,29 +159,58 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     /**
+     * Catch exceptions and reset working progress
+     */
+    private fun catchExceptions(view: View, runnable: () -> Unit) {
+        try {
+            runnable()
+        } catch (e: Exception) {
+            val context = getApplication<Application>().applicationContext
+
+            e.printStackTrace()
+            _working.postValue(false)
+
+            val error = context.getString(R.string.snackbar_exception)
+            viewModelScope.launch(Dispatchers.Main) {
+                Snackbar.make(
+                    view,
+                    error,
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    /**
      * Prepare the recycler view
      */
     fun prepareRecycler(context: Context, recycler: RecyclerView) {
         if (worldsRecyclerAdapter == null) {
             worldsRecyclerAdapter = WorldsRecyclerAdapter(context, mutableListOf()).apply {
-                uploadHook = {
+                uploadHook = { view, worldName ->
                     viewModelScope.launch(Dispatchers.IO) {
-                        uploadWorldToDrive(it)
-                        updateWorldsList()
+                        catchExceptions(view) {
+                            uploadWorldToDrive(worldName)
+                            updateWorldsList()
+                        }
                     }
                 }
 
-                downloadHook = {
+                downloadHook = { view, worldName ->
                     viewModelScope.launch(Dispatchers.IO) {
-                        downloadWorldFromDrive(it)
-                        updateWorldsList()
+                        catchExceptions(view) {
+                            downloadWorldFromDrive(worldName)
+                            updateWorldsList()
+                        }
                     }
                 }
 
-                deleteCloudHook = {
+                deleteCloudHook = { view, worldName ->
                     viewModelScope.launch(Dispatchers.IO) {
-                        deleteWorldFromDrive(it)
-                        updateWorldsList()
+                        catchExceptions(view) {
+                            deleteWorldFromDrive(worldName)
+                            updateWorldsList()
+                        }
                     }
                 }
             }

@@ -5,6 +5,7 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.util.TypedValue
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.draco.bedrock.R
@@ -18,7 +19,14 @@ class WorldsRecyclerAdapter(
     private val context: Context,
     var worldFileList: MutableList<WorldFile>
 ) : RecyclerView.Adapter<WorldsRecyclerAdapter.ViewHolder>() {
+    private lateinit var recycler: RecyclerView
+
     class ViewHolder(val binding: RecyclerWorldItemBinding): RecyclerView.ViewHolder(binding.root)
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        recycler = recyclerView
+    }
 
     private val accentColor: Int by lazy {
         val typedValue = TypedValue()
@@ -51,9 +59,9 @@ class WorldsRecyclerAdapter(
 
     override fun getItemCount() = worldFileList.size
 
-    var uploadHook: ((worldName: String) -> Unit)? = null
-    var downloadHook: ((worldName: String) -> Unit)? = null
-    var deleteCloudHook: ((worldName: String) -> Unit)? = null
+    var uploadHook: ((view: View, worldName: String) -> Unit)? = null
+    var downloadHook: ((view: View, worldName: String) -> Unit)? = null
+    var deleteCloudHook: ((view: View, worldName: String) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = RecyclerWorldItemBinding.inflate(LayoutInflater.from(context), parent, false)
@@ -82,19 +90,19 @@ class WorldsRecyclerAdapter(
 
         holder.binding.upload.setOnClickListener {
             createConfirmDialog(R.string.confirm_dialog_upload_message) {
-                uploadHook?.invoke(worldFile.id)
+                uploadHook?.invoke(recycler, worldFile.id)
             }
         }
 
         holder.binding.download.setOnClickListener {
             createConfirmDialog(R.string.desc_download) {
-                downloadHook?.invoke(worldFile.id)
+                downloadHook?.invoke(recycler, worldFile.id)
             }
         }
 
         holder.binding.deleteCloud.setOnClickListener {
             createConfirmDialog(R.string.confirm_dialog_delete_message) {
-                deleteCloudHook?.invoke(worldFile.id)
+                deleteCloudHook?.invoke(recycler, worldFile.id)
             }
         }
     }
