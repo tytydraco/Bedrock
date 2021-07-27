@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Bedrock</string>
+
+    <string name="pref_name">shared_preferences</string>
+    <string name="pref_key_uri">uri</string>
 </resources>

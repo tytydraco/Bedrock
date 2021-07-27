@@ -3,11 +3,14 @@ package com.draco.bedrock.viewmodels
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
+import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.draco.bedrock.R
 import com.draco.bedrock.models.DriveFile
 import com.draco.bedrock.models.WorldFile
 import com.draco.bedrock.recyclers.WorldsRecyclerAdapter
@@ -23,7 +26,29 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     val googleAccount = GoogleAccount(application.applicationContext)
     var googleDrive: GoogleDrive? = null
     var worldsRecyclerAdapter: WorldsRecyclerAdapter? = null
+    private val sharedPreferences = application.applicationContext.getSharedPreferences(
+        application.applicationContext.getString(R.string.pref_name),
+        Context.MODE_PRIVATE
+    )
+
     lateinit var rootDocumentFile: DocumentFile
+
+    /**
+     * Check if the user has selected a valid worlds folder
+     */
+    fun isDocumentMinecraftWorldsFolder(file: DocumentFile) = file.name == "minecraftWorlds" && file.isDirectory
+
+    /**
+     * Check if the user already has SAF permissions
+     */
+    fun getPersistedUri(): Uri? {
+        val context = getApplication<Application>().applicationContext
+        return context
+            .contentResolver
+            .persistedUriPermissions
+            .find {it.uri.toString().contains("minecraftWorlds") }
+            ?.uri
+    }
 
     /**
      * Update the recycler adapter with all of our worlds
