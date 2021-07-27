@@ -11,6 +11,7 @@ import com.draco.bedrock.R
 import com.draco.bedrock.databinding.RecyclerWorldItemBinding
 import com.draco.bedrock.models.WorldFile
 import com.draco.bedrock.repositories.constants.WorldFileType
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.*
 
 class WorldsRecyclerAdapter(
@@ -36,6 +37,17 @@ class WorldsRecyclerAdapter(
 
         return@lazy color
     }
+
+    /**
+     * Create and show a dialog to confirm changes
+     */
+    private fun createConfirmDialog(messageResId: Int, action: () -> Unit) =
+        MaterialAlertDialogBuilder(context)
+            .setTitle(R.string.confirm_dialog_title)
+            .setMessage(messageResId)
+            .setPositiveButton(R.string.dialog_button_yes) { _, _ -> action() }
+            .setNegativeButton(R.string.dialog_button_no) { _, _ -> }
+            .show()
 
     override fun getItemCount() = worldFileList.size
 
@@ -69,15 +81,21 @@ class WorldsRecyclerAdapter(
         }
 
         holder.binding.upload.setOnClickListener {
-            uploadHook?.invoke(worldFile.id)
+            createConfirmDialog(R.string.confirm_dialog_upload_message) {
+                uploadHook?.invoke(worldFile.id)
+            }
         }
 
         holder.binding.download.setOnClickListener {
-            downloadHook?.invoke(worldFile.id)
+            createConfirmDialog(R.string.desc_download) {
+                downloadHook?.invoke(worldFile.id)
+            }
         }
 
         holder.binding.deleteCloud.setOnClickListener {
-            deleteCloudHook?.invoke(worldFile.id)
+            createConfirmDialog(R.string.confirm_dialog_delete_message) {
+                deleteCloudHook?.invoke(worldFile.id)
+            }
         }
     }
 }
