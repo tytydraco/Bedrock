@@ -1,6 +1,7 @@
 package com.draco.bedrock.viewmodels
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -23,6 +24,8 @@ import com.draco.bedrock.repositories.remote.GoogleAccount
 import com.draco.bedrock.repositories.remote.GoogleDrive
 import com.draco.bedrock.utils.DocumentFileZip
 import com.draco.bedrock.utils.MinecraftWorldUtils
+import com.github.javiersantos.piracychecker.PiracyChecker
+import com.github.javiersantos.piracychecker.piracyChecker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -34,11 +37,22 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     var googleDrive: GoogleDrive? = null
     var worldsRecyclerAdapter: WorldsRecyclerAdapter? = null
 
+    private val sharedPreferences = application
+        .applicationContext
+        .getSharedPreferences(
+            application
+                .applicationContext
+                .getString(R.string.pref_file),
+            Context.MODE_PRIVATE
+        )
+
     private val contentResolver = getApplication<Application>().contentResolver
 
     val minecraftWorldUtils = MinecraftWorldUtils(application.applicationContext)
 
     var rootDocumentFile: DocumentFile? = null
+
+    var checker: PiracyChecker? = null
 
     private val _working = MutableLiveData<Int?>()
     val working: LiveData<Int?> = _working
@@ -50,6 +64,41 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         /* Try to initialize the rootDocumentFile if we already granted it permissions */
         getPersistableUri()?.let {
             rootDocumentFile = DocumentFile.fromTreeUri(application.applicationContext, it)!!
+        }
+    }
+
+    /**
+     * Start the piracy checker
+     * @param activity Activity to use when showing the error
+     */
+    fun piracyCheck(activity: Activity) {
+        val context = getApplication<Application>().applicationContext
+
+        checker = activity.piracyChecker {
+            enableGooglePlayLicensing("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhlxHH5KebMRvybD2yRaHk/0Vd2uxPnyUGL1J0Lz4DiTnvjDsFTre1b55akdZCThZ2M06NWyyh3/70/3mxWI4F1HlMxOGM2BHGAjWKx5IWpAKEERAxhRm/M4MnaYQxFgJUEUGm+SLi+vjoQOvERrtF5svUfAudDj/6TZyxM7N/CeohMQ2GqfMcQFh0VaYbFj55bfjgFSQ/jAFw5u7gPhoqAgMxpMCFZWXWXvt4E2gx/q4LaXAc6qq9hXkxVechk6RLYMSyUG0lWAr5iewkgVWdIejsJvy2Bp7jnBeX4vt/DQGwNuzeKNzjWXfP3jLtKs2MWcNELLYwlw55wueKbFe/wIDAQAB")
+            saveResultToSharedPreferences(sharedPreferences, context.getString(R.string.pref_key_verified))
+        }.also {
+            val verified = sharedPreferences.getBoolean(context.getString(R.string.pref_key_verified), false)
+            if (!verified)
+                it.start()
+        }
+    }
+
+    /**
+     * Setup Google sign-in stuff
+     * @param activity Activity to request permissions on
+     * @param error Runnable to execute if sign-in fails
+     */
+    fun setupGoogle(activity: Activity, error: (() -> Unit)?) {
+        googleAccount.registerLoginHandler {
+            if (it != null) {
+                initGoogleDrive()
+                googleDrive?.requestPermissionsIfNecessary(activity)
+
+                if (googleDrive?.hasPermissions() == true)
+                    updateWorldsList()
+            } else
+                error?.invoke()
         }
     }
 
