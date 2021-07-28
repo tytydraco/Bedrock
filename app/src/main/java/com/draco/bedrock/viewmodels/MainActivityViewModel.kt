@@ -6,6 +6,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.view.View
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
@@ -24,8 +25,8 @@ import com.draco.bedrock.repositories.remote.GoogleAccount
 import com.draco.bedrock.repositories.remote.GoogleDrive
 import com.draco.bedrock.utils.DocumentFileZip
 import com.draco.bedrock.utils.MinecraftWorldUtils
-import com.github.javiersantos.piracychecker.PiracyChecker
-import com.github.javiersantos.piracychecker.piracyChecker
+import com.github.javiersantos.piracychecker.*
+import com.github.javiersantos.piracychecker.enums.PiracyCheckerError
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -68,20 +69,38 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     /**
-     * Start the piracy checker
+     * Start the piracy checker if it is not setup yet
      * @param activity Activity to use when showing the error
      */
     fun piracyCheck(activity: Activity) {
+        if (checker != null)
+            return
+
         val context = getApplication<Application>().applicationContext
 
         checker = activity.piracyChecker {
             enableGooglePlayLicensing("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhlxHH5KebMRvybD2yRaHk/0Vd2uxPnyUGL1J0Lz4DiTnvjDsFTre1b55akdZCThZ2M06NWyyh3/70/3mxWI4F1HlMxOGM2BHGAjWKx5IWpAKEERAxhRm/M4MnaYQxFgJUEUGm+SLi+vjoQOvERrtF5svUfAudDj/6TZyxM7N/CeohMQ2GqfMcQFh0VaYbFj55bfjgFSQ/jAFw5u7gPhoqAgMxpMCFZWXWXvt4E2gx/q4LaXAc6qq9hXkxVechk6RLYMSyUG0lWAr5iewkgVWdIejsJvy2Bp7jnBeX4vt/DQGwNuzeKNzjWXfP3jLtKs2MWcNELLYwlw55wueKbFe/wIDAQAB")
-            saveResultToSharedPreferences(sharedPreferences, context.getString(R.string.pref_key_verified))
-        }.also {
-            val verified = sharedPreferences.getBoolean(context.getString(R.string.pref_key_verified), false)
-            if (!verified)
-                it.start()
+            saveResultToSharedPreferences(
+                sharedPreferences,
+                context.getString(R.string.pref_key_verified)
+            )
+
+            callback {
+                onError {
+                    Log.d("PiracyChecker", "Error: ${it.name}")
+                }
+                doNotAllow { piracyCheckerError, _ ->
+                    Log.d("PiracyChecker", "Disallowed: ${piracyCheckerError.name}")
+                }
+                allow {
+                    Log.d("PiracyChecker", "Allowed")
+                }
+            }
         }
+
+        val verified = sharedPreferences.getBoolean(context.getString(R.string.pref_key_verified), false)
+        if (!verified)
+            checker?.start()
     }
 
     /**
