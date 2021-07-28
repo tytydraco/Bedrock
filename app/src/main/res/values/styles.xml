@@ -27,7 +27,6 @@
         <item name="cardCornerRadius">@dimen/card_corner_radius</item>
         <item name="cardElevation">@dimen/card_elevation</item>
         <item name="android:layout_marginTop">@dimen/recycler_item_margin</item>
-        <item name="android:layout_marginBottom">@dimen/recycler_item_margin</item>
         <item name="android:layout_marginStart">@dimen/recycler_item_margin</item>
         <item name="android:layout_marginEnd">@dimen/recycler_item_margin</item>
     </style>
