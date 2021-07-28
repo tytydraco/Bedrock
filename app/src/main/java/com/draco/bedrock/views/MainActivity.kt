@@ -23,12 +23,10 @@ class MainActivity : AppCompatActivity() {
 
     private val setupGoogleLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         setupGoogle()
-        viewModel.updateWorldsList()
     }
 
     private val setupSafLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         setupSaf()
-        viewModel.updateWorldsList()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
