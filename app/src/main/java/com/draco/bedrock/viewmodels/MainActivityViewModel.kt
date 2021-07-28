@@ -22,6 +22,7 @@ import com.draco.bedrock.repositories.constants.WorldFileType
 import com.draco.bedrock.repositories.remote.GoogleAccount
 import com.draco.bedrock.repositories.remote.GoogleDrive
 import com.draco.bedrock.utils.DocumentFileZip
+import com.draco.bedrock.utils.MinecraftWorldUtils
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,6 +33,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     var googleDrive: GoogleDrive? = null
     var worldsRecyclerAdapter: WorldsRecyclerAdapter? = null
 
+    val minecraftWorldUtils = MinecraftWorldUtils(application.applicationContext)
+
     var rootDocumentFile: DocumentFile? = null
 
     private val _working = MutableLiveData<Int?>()
@@ -41,19 +44,16 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     val worldList: LiveData<List<WorldFile>> = _worldList
 
     init {
+        /* Try to initialize the rootDocumentFile if we already granted it permissions */
         getPersistableUri()?.let {
             rootDocumentFile = DocumentFile.fromTreeUri(application.applicationContext, it)!!
         }
     }
 
-    /**
-     * Check if the user has selected a valid worlds folder
-     */
-    fun isDocumentMinecraftWorldsFolder(file: DocumentFile) =
-        file.name == MinecraftConstants.WORLDS_FOLDER_NAME && file.isDirectory
 
     /**
      * Check if the user already has SAF permissions
+     * @return The Uri for the Worlds folder, or null if it is not persisted
      */
     fun getPersistableUri(): Uri? {
         val context = getApplication<Application>().applicationContext
@@ -61,18 +61,20 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         return context
             .contentResolver
             .persistedUriPermissions
-            .find {it.uri.toString().contains(MinecraftConstants.WORLDS_FOLDER_NAME) }
+            .find { it.uri.toString().contains(MinecraftConstants.WORLDS_FOLDER_NAME) }
             ?.uri
     }
 
     /**
-     * Store the persistable Uri and update the root document; return false if bad directory
+     * Store the persistable Uri and update the root document
+     * @param uri OPEN_DOCUMENT_TREE uri
+     * @return True if we persisted it, false if the selected world is invalid
      */
     fun takePersistableUri(uri: Uri): Boolean {
         val context = getApplication<Application>().applicationContext
 
         val selectedFolder = DocumentFile.fromTreeUri(context, uri)!!
-        if (!isDocumentMinecraftWorldsFolder(selectedFolder))
+        if (!minecraftWorldUtils.isValidWorld(selectedFolder))
             return false
 
         context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
@@ -82,20 +84,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         return true
     }
 
-    fun getWorldNameForWorldFolder(worldFolder: DocumentFile): String? {
-        val context = getApplication<Application>().applicationContext
-
-        worldFolder.listFiles().find { it.name == MinecraftConstants.LEVEL_FILE_NAME }?.let {
-            context.contentResolver.openInputStream(it.uri).use { inputStream ->
-                inputStream?.bufferedReader().use { bufferedReader ->
-                    return bufferedReader?.readText()
-                }
-            }
-        }
-
-        return null
-    }
-
     /**
      * Update the recycler adapter with all of our worlds
      */
@@ -103,6 +91,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     fun updateWorldsList() {
         viewModelScope.launch(Dispatchers.IO) {
             _working.postValue(R.string.working_updating_world_list)
+
+            /* Get both local and remote worlds */
             val localFiles = rootDocumentFile?.listFiles()
             val driveFiles = try {
                 googleDrive?.getFiles()
@@ -112,8 +102,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
             val files = mutableListOf<WorldFile>()
 
+            /* Parse local worlds */
             localFiles?.forEach {
-                val name = getWorldNameForWorldFolder(it)?.trim()
+                val name = minecraftWorldUtils.getLevelName(it)?.trim()
                 val id = it.name
 
                 if (name != null && id != null) {
@@ -127,6 +118,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 }
             }
 
+            /* Parse remote worlds */
             driveFiles?.forEach {
                 val matchingLocalFile = files.find { localFile -> localFile.id == it.name }
 
@@ -143,17 +135,23 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                             )
                         )
                     }
-                } else
+                } else {
+                    /* If we have this world logged already, it is present on local and remote */
                     matchingLocalFile.type = WorldFileType.LOCAL_REMOTE
+                }
             }
 
+            /* Sort worlds by their pretty name */
             val newWorlds = files.sortedBy { it.name }.toMutableList()
 
             _worldList.postValue(newWorlds)
 
+            /* Update the recycler adapter */
             withContext(Dispatchers.Main) {
-                worldsRecyclerAdapter?.worldFileList = newWorlds
-                worldsRecyclerAdapter?.notifyDataSetChanged()
+                worldsRecyclerAdapter?.let {
+                    it.worldFileList = newWorlds
+                    it.notifyDataSetChanged()
+                }
             }
 
             _working.postValue(null)
@@ -161,17 +159,22 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     /**
-     * Catch exceptions and reset working progress
+     * Catch exceptions, display an error for the user, and reset working progress
+     * @param view A view to display the Snackbar on
+     * @param runnable The problematic runnable to safely run
      */
-    private fun catchExceptions(view: View, runnable: () -> Unit) {
+    fun safeCatch(view: View, runnable: () -> Unit) {
         try {
             runnable()
         } catch (e: Exception) {
+            e.printStackTrace()
+
             val context = getApplication<Application>().applicationContext
 
-            e.printStackTrace()
+            /* Stop the progress bar if anything is loading */
             _working.postValue(null)
 
+            /* Show the user a scary Snackbar */
             val error = context.getString(R.string.snackbar_exception)
             viewModelScope.launch(Dispatchers.Main) {
                 Snackbar.make(
@@ -184,48 +187,57 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     /**
-     * Prepare the recycler view
+     * Prepare the RecyclerView Adapter
+     * @param context View-bound context
      */
-    fun prepareRecycler(context: Context, recycler: RecyclerView) {
-        if (worldsRecyclerAdapter == null) {
-            worldsRecyclerAdapter = WorldsRecyclerAdapter(context, mutableListOf()).apply {
-                uploadHook = { view, worldName ->
-                    viewModelScope.launch(Dispatchers.IO) {
-                        catchExceptions(view) {
-                            uploadWorldToDrive(worldName)
-                            updateWorldsList()
-                        }
+    private fun prepareRecyclerAdapter(context: Context) {
+        worldsRecyclerAdapter = WorldsRecyclerAdapter(context, mutableListOf()).apply {
+            uploadHook = { view, worldName ->
+                viewModelScope.launch(Dispatchers.IO) {
+                    safeCatch(view) {
+                        uploadWorldToDrive(worldName)
+                        updateWorldsList()
                     }
                 }
+            }
 
-                downloadHook = { view, worldName ->
-                    viewModelScope.launch(Dispatchers.IO) {
-                        catchExceptions(view) {
-                            downloadWorldFromDrive(worldName)
-                            updateWorldsList()
-                        }
+            downloadHook = { view, worldName ->
+                viewModelScope.launch(Dispatchers.IO) {
+                    safeCatch(view) {
+                        downloadWorldFromDrive(worldName)
+                        updateWorldsList()
                     }
                 }
+            }
 
-                deleteDeviceHook = { view, worldName ->
-                    viewModelScope.launch(Dispatchers.IO) {
-                        catchExceptions(view) {
-                            deleteWorldFromDevice(worldName)
-                            updateWorldsList()
-                        }
+            deleteDeviceHook = { view, worldName ->
+                viewModelScope.launch(Dispatchers.IO) {
+                    safeCatch(view) {
+                        deleteWorldFromDevice(worldName)
+                        updateWorldsList()
                     }
                 }
+            }
 
-                deleteCloudHook = { view, worldName ->
-                    viewModelScope.launch(Dispatchers.IO) {
-                        catchExceptions(view) {
-                            deleteWorldFromDrive(worldName)
-                            updateWorldsList()
-                        }
+            deleteCloudHook = { view, worldName ->
+                viewModelScope.launch(Dispatchers.IO) {
+                    safeCatch(view) {
+                        deleteWorldFromDrive(worldName)
+                        updateWorldsList()
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Prepare the RecyclerView
+     * @param context View-bound context
+     * @param recycler RecyclerView to hook to
+     */
+    fun prepareRecycler(context: Context, recycler: RecyclerView) {
+        if (worldsRecyclerAdapter == null)
+            prepareRecyclerAdapter(context)
 
         recycler.apply {
             adapter = worldsRecyclerAdapter
@@ -233,13 +245,14 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
-    fun uploadAll(view: View) {
+    /**
+     * Upload all Minecraft worlds
+     */
+    fun uploadAll() {
         viewModelScope.launch(Dispatchers.IO) {
             _working.postValue(R.string.working_uploading)
-            catchExceptions(view) {
-                _worldList.value?.forEach {
-                    uploadWorldToDrive(it.id)
-                }
+            _worldList.value?.forEach {
+                uploadWorldToDrive(it.id)
             }
             _working.postValue(null)
 
@@ -247,13 +260,15 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
-    fun downloadAll(view: View) {
+    /**
+     * Download all Minecraft worlds
+     * @param view View to use for catching exceptions
+     */
+    fun downloadAll() {
         viewModelScope.launch(Dispatchers.IO) {
             _working.postValue(R.string.working_downloading)
-            catchExceptions(view) {
-                _worldList.value?.forEach {
-                    downloadWorldFromDrive(it.id)
-                }
+            _worldList.value?.forEach {
+                downloadWorldFromDrive(it.id)
             }
             _working.postValue(null)
 
@@ -261,6 +276,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
+    /**
+     * Delete all local Minecraft worlds
+     * @param view View to use for catching exceptions
+     */
     fun deleteAllDevice() {
         viewModelScope.launch(Dispatchers.IO) {
             _working.postValue(R.string.working_delete_device)
@@ -275,37 +294,20 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
-    fun deleteAllCloud(view: View) {
+    /**
+     * Delete all remote Minecraft worlds
+     * @param view View to use for catching exceptions
+     */
+    fun deleteAllCloud() {
         viewModelScope.launch(Dispatchers.IO) {
             _working.postValue(R.string.working_delete_cloud)
-            catchExceptions(view) {
-                _worldList.value?.forEach {
-                    deleteWorldFromDrive(it.id)
-                }
+            _worldList.value?.forEach {
+                deleteWorldFromDrive(it.id)
             }
             _working.postValue(null)
 
             updateWorldsList()
         }
-    }
-
-    /**
-     * Erase a world file from device
-     */
-    fun deleteWorldFromDevice(worldId: String) {
-        _working.postValue(R.string.working_delete_device)
-        rootDocumentFile?.listFiles()?.find { it.name == worldId }?.delete()
-        _working.postValue(null)
-    }
-
-    /**
-     * Erase a world file from Google Drive
-     */
-    fun deleteWorldFromDrive(worldId: String) {
-        _working.postValue(R.string.working_delete_cloud)
-        val driveFile = DriveFile(name = worldId)
-        googleDrive?.deleteFile(driveFile)
-        _working.postValue(null)
     }
 
     /**
@@ -320,7 +322,30 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     /**
-     * Upload the Google Drive world file
+     * Delete a local Minecraft world
+     * @param worldId Folder ID to use to find what to delete
+     */
+    fun deleteWorldFromDevice(worldId: String) {
+        _working.postValue(R.string.working_delete_device)
+        rootDocumentFile?.listFiles()?.find { it.name == worldId }?.delete()
+        _working.postValue(null)
+    }
+
+    /**
+     * Delete a remote Minecraft world
+     * @param worldId Folder ID to use to find what to delete
+     */
+    fun deleteWorldFromDrive(worldId: String) {
+        _working.postValue(R.string.working_delete_cloud)
+        val driveFile = DriveFile(name = worldId)
+        googleDrive?.deleteFile(driveFile)
+        _working.postValue(null)
+    }
+
+    /**
+     * Upload a Minecraft world to the cloud
+     * @param view View to use for catching exceptions
+     * @param worldId Folder ID to use to find what to delete
      */
     fun uploadWorldToDrive(worldId: String) {
         val context = getApplication<Application>().applicationContext
@@ -330,7 +355,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         rootDocumentFile?.listFiles()?.find { it.name == worldId }?.let {
             val driveFile = DriveFile(
                 name = worldId,
-                description = getWorldNameForWorldFolder(it)
+                description = minecraftWorldUtils.getLevelName(it)
             )
 
             _working.postValue(R.string.working_zipping)
@@ -343,15 +368,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     /**
-     * Erases the subdirectory contents; creates one if it does not yet exist
-     */
-    private fun recreateSubDirectoryIfNecessary(subDirectoryName: String): DocumentFile? {
-        rootDocumentFile?.listFiles()?.find { it.name == subDirectoryName }?.delete()
-        return rootDocumentFile?.createDirectory(subDirectoryName)
-    }
-
-    /**
-     * Extracts the Google Drive world file
+     * Download and extract a Minecraft world from the cloud
+     * @param worldId Folder ID to use to find what to delete
      */
     fun downloadWorldFromDrive(worldId: String) {
         val context = getApplication<Application>().applicationContext
@@ -361,7 +379,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         val driveFile = DriveFile(name = worldId)
         if (googleDrive?.fileExists(driveFile) == true) {
             googleDrive?.readFileBytes(driveFile)?.let {
-                recreateSubDirectoryIfNecessary(worldId)?.let { subFolder ->
+                /* Recreate any existing world folders */
+                rootDocumentFile?.listFiles()?.find { it.name == worldId }?.delete()
+                rootDocumentFile?.createDirectory(worldId)?.let { subFolder ->
                     _working.postValue(R.string.working_unzipping)
                     DocumentFileZip(context, subFolder).unZip(it)
                 }
