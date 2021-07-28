@@ -34,7 +34,6 @@
     <string name="dialog_button_support">Support</string>
     <string name="dialog_button_yes">Yes</string>
     <string name="dialog_button_no">No</string>
-    <string name="dialog_button_try_again">Try again</string>
 
     <string name="setup_sign_in">Sign-in to Google and grant Google Drive access to continue</string>
     <string name="setup_saf">This app needs access to your "minecraftWorlds" folder. Navigate to /sdcard/games/com.mojang/minecraftWorlds, and select it.</string>

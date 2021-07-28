@@ -3,7 +3,6 @@ package com.draco.bedrock.utils
 import android.content.ContentResolver
 import androidx.documentfile.provider.DocumentFile
 import java.io.*
-import java.nio.file.Files
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
@@ -27,7 +26,7 @@ class DocumentFileZip(
 
     /**
      * UnZip the contents of the zip byte array into the class document file root directory
-     * @param zipBytes ByteArray of the Zip file contents
+     * @param inputStream Input stream of the Zip file contents
      */
     fun unZip(inputStream: InputStream) {
         UnZip(inputStream).apply {

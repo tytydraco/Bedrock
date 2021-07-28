@@ -2,23 +2,21 @@ package com.draco.bedrock.repositories.remote
 
 import android.app.Activity
 import android.content.Context
+import com.draco.bedrock.models.DriveFile
+import com.draco.bedrock.repositories.constants.GoogleDriveSpaces
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.Scopes
 import com.google.android.gms.common.api.Scope
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.http.AbstractInputStreamContent
 import com.google.api.client.http.ByteArrayContent
+import com.google.api.client.http.FileContent
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File
-import com.draco.bedrock.models.DriveFile
-import com.draco.bedrock.repositories.constants.GoogleDriveSpaces
-import com.google.api.client.http.AbstractInputStreamContent
-import com.google.api.client.http.FileContent
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
 import java.io.InputStream
 
@@ -193,7 +191,7 @@ class GoogleDrive(
      * @return The first file matching the configuration, or null if nothing is found
      */
     fun findFile(driveFile: DriveFile) = getFiles()
-        ?.find {
+        .find {
             fileMatchesFileConfig(it, driveFile)
         }
 
