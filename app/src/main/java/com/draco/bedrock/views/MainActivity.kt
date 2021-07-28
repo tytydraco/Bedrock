@@ -156,7 +156,6 @@ class MainActivity : AppCompatActivity() {
         loadingDialog = MaterialAlertDialogBuilder(this)
             .setView(R.layout.dialog_progress)
             .setTitle(R.string.loading_dialog_title)
-            .setMessage(R.string.loading_dialog_message)
             .setCancelable(false)
             .create()
 
