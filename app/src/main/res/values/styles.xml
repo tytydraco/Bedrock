@@ -38,6 +38,12 @@
         <item name="android:layout_marginEnd">@dimen/recycler_item_horizontal_margin</item>
     </style>
 
+    <style name="Widget.Bedrock.ProgressBar.Horizontal" parent="Widget.AppCompat.ProgressBar.Horizontal">
+        <item name="android:indeterminate">true</item>
+        <item name="android:layout_marginStart">@dimen/progress_horizontal_margin</item>
+        <item name="android:layout_marginEnd">@dimen/progress_horizontal_margin</item>
+    </style>
+
     <style name="Widget.Bedrock.FloatingActionButton" parent="Widget.MaterialComponents.FloatingActionButton">
         <item name="android:layout_marginBottom">@dimen/floating_action_button_margin</item>
         <item name="android:layout_marginEnd">@dimen/floating_action_button_margin</item>

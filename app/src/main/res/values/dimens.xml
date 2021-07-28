@@ -7,7 +7,7 @@
     <dimen name="recycler_item_padding">12dp</dimen>
     <dimen name="card_corner_radius">8dp</dimen>
     <dimen name="card_elevation">6dp</dimen>
-    <dimen name="progress_horizontal_padding">12dp</dimen>
+    <dimen name="progress_horizontal_margin">24dp</dimen>
     <dimen name="no_worlds_image_size">150dp</dimen>
     <dimen name="divider_height">1dp</dimen>
     <dimen name="divider_horizontal_margin">12dp</dimen>
