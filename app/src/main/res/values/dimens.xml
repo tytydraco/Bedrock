@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="recycler_item_image_padding">12dp</dimen>
-    <dimen name="recycler_item_margin">12dp</dimen>
+    <dimen name="recycler_item_margin">18dp</dimen>
     <dimen name="recycler_item_text_horizontal_margin">12dp</dimen>
     <dimen name="recycler_item_padding">12dp</dimen>
-    <dimen name="card_corner_radius">12dp</dimen>
-    <dimen name="card_elevation">4dp</dimen>
+    <dimen name="card_corner_radius">8dp</dimen>
+    <dimen name="card_elevation">6dp</dimen>
     <dimen name="progress_horizontal_padding">12dp</dimen>
     <dimen name="no_worlds_image_size">150dp</dimen>
     <dimen name="divider_height">1dp</dimen>
