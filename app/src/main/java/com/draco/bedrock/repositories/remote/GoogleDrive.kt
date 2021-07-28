@@ -204,7 +204,7 @@ class GoogleDrive(
     /**
      * @return A list of files in the Google Drive application data folder.
      */
-    fun getFiles(space: String = GoogleDriveSpaces.APP_DATA_FOLDER): List<File>? {
+    fun getFiles(space: String = GoogleDriveSpaces.APP_DATA_FOLDER): List<File> {
         val files = mutableListOf<File>()
 
         var nextPageToken: String? = null

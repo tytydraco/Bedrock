@@ -26,7 +26,6 @@ import com.draco.bedrock.repositories.remote.GoogleDrive
 import com.draco.bedrock.utils.DocumentFileZip
 import com.draco.bedrock.utils.MinecraftWorldUtils
 import com.github.javiersantos.piracychecker.*
-import com.github.javiersantos.piracychecker.enums.PiracyCheckerError
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +35,7 @@ import kotlinx.coroutines.withContext
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
     val googleAccount = GoogleAccount(application.applicationContext)
     var googleDrive: GoogleDrive? = null
-    var worldsRecyclerAdapter: WorldsRecyclerAdapter? = null
+    private var worldsRecyclerAdapter: WorldsRecyclerAdapter? = null
 
     private val sharedPreferences = application
         .applicationContext
@@ -49,9 +48,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     private val contentResolver = getApplication<Application>().contentResolver
 
-    val minecraftWorldUtils = MinecraftWorldUtils(application.applicationContext)
+    private val minecraftWorldUtils = MinecraftWorldUtils(application.applicationContext)
 
-    var rootDocumentFile: DocumentFile? = null
+    private var rootDocumentFile: DocumentFile? = null
 
     var checker: PiracyChecker? = null
 
@@ -127,13 +126,14 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * @param messageResId String Res-id to show in a dialog
      * @param action Runnable to execute if user confirms
      */
-    fun createConfirmDialog(context: Context, messageResId: Int, action: () -> Unit) =
+    fun createConfirmDialog(context: Context, messageResId: Int, action: () -> Unit) {
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.confirm_dialog_title)
             .setMessage(messageResId)
             .setPositiveButton(R.string.dialog_button_yes) { _, _ -> action() }
             .setNegativeButton(R.string.dialog_button_no) { _, _ -> }
             .show()
+    }
 
     /**
      * Check if the user already has SAF permissions
@@ -351,7 +351,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Download all Minecraft worlds
-     * @param view View to use for catching exceptions
      */
     fun downloadAll() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -367,7 +366,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Delete all local Minecraft worlds
-     * @param view View to use for catching exceptions
      */
     fun deleteAllDevice() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -385,7 +383,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Delete all remote Minecraft worlds
-     * @param view View to use for catching exceptions
      */
     fun deleteAllCloud() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -433,7 +430,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Upload a Minecraft world to the cloud
-     * @param view View to use for catching exceptions
      * @param worldId Folder ID to use to find what to delete
      */
     fun uploadWorldToDrive(worldId: String) {
