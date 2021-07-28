@@ -336,11 +336,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      */
     fun uploadAll() {
         viewModelScope.launch(Dispatchers.IO) {
-            _working.postValue(R.string.working_uploading)
             _worldList.value?.forEach {
                 uploadWorldToDrive(it.id)
             }
-            _working.postValue(null)
 
             updateWorldsList()
         }
@@ -351,11 +349,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      */
     fun downloadAll() {
         viewModelScope.launch(Dispatchers.IO) {
-            _working.postValue(R.string.working_downloading)
             _worldList.value?.forEach {
                 downloadWorldFromDrive(it.id)
             }
-            _working.postValue(null)
 
             updateWorldsList()
         }
@@ -366,13 +362,11 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      */
     fun deleteAllDevice() {
         viewModelScope.launch(Dispatchers.IO) {
-            _working.postValue(R.string.working_delete_device)
             rootDocumentFile?.listFiles()?.forEach {
                 it?.name?.let { name ->
                     deleteWorldFromDevice(name)
                 }
             }
-            _working.postValue(null)
 
             updateWorldsList()
         }
@@ -383,11 +377,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      */
     fun deleteAllCloud() {
         viewModelScope.launch(Dispatchers.IO) {
-            _working.postValue(R.string.working_delete_cloud)
             _worldList.value?.forEach {
                 deleteWorldFromDrive(it.id)
             }
-            _working.postValue(null)
 
             updateWorldsList()
         }
