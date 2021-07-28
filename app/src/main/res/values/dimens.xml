@@ -3,7 +3,7 @@
     <dimen name="recycler_item_image_padding">12dp</dimen>
     <dimen name="recycler_item_margin">12dp</dimen>
     <dimen name="recycler_item_text_horizontal_margin">12dp</dimen>
-    <dimen name="recycler_item_vertical_padding">12dp</dimen>
+    <dimen name="recycler_item_padding">12dp</dimen>
     <dimen name="card_corner_radius">12dp</dimen>
     <dimen name="card_elevation">4dp</dimen>
     <dimen name="progress_horizontal_padding">12dp</dimen>
