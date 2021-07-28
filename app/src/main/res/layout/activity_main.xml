@@ -14,10 +14,11 @@
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
         android:id="@+id/no_worlds"
+        style="@style/Bedrock.SetupImageTextPair"
         android:visibility="gone"
-        android:gravity="center"
         android:orientation="vertical">
         <ImageView
             android:layout_width="@dimen/no_worlds_image_size"
@@ -27,7 +28,15 @@
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textAlignment="center"
             style="@style/TextAppearance.MaterialComponents.Subtitle1"
             android:text="@string/no_worlds" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/help"
+            android:layout_marginTop="@dimen/help_button_top_margin"
+            android:textAlignment="center"
+            android:text="@string/button_help" />
     </LinearLayout>
 </RelativeLayout>

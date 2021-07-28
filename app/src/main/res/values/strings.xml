@@ -27,7 +27,11 @@
     <string name="confirm_dialog_delete_device_all_message">Are you sure you want to erase all your device files?</string>
     <string name="confirm_dialog_delete_cloud_all_message">Are you sure you want to erase all your cloud files?</string>
 
+    <string name="help_dialog_title">Help</string>
+    <string name="help_dialog_message">Make sure that your Minecraft File Storage setting (Settings->Profile->File Storage Location) is set to "External" and not "Application". Apps are not allowed to access the "Application" worlds.</string>
+
     <string name="dialog_button_okay">Okay</string>
+    <string name="dialog_button_support">Support</string>
     <string name="dialog_button_yes">Yes</string>
     <string name="dialog_button_no">No</string>
     <string name="dialog_button_try_again">Try again</string>
@@ -64,6 +68,7 @@
     <string name="menu_action_delete_cloud_all">Delete all from cloud</string>
 
     <string name="no_worlds">No worlds found :(</string>
+    <string name="button_help">Help</string>
 
     <string name="working_uploading">Uploading world to device</string>
     <string name="working_downloading">Downloading world to device</string>

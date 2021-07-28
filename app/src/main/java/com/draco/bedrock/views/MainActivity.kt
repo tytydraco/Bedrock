@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var loadingDialog: AlertDialog
+    private lateinit var helpDialog: AlertDialog
 
     private val setupGoogleLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         setupGoogle()
@@ -44,6 +45,10 @@ class MainActivity : AppCompatActivity() {
         /* Handle pull to refresh */
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.updateWorldsList()
+        }
+
+        binding.help.setOnClickListener {
+            helpDialog.show()
         }
 
         viewModel.piracyCheck(this)
@@ -159,6 +164,14 @@ class MainActivity : AppCompatActivity() {
             .setView(R.layout.dialog_progress)
             .setTitle(R.string.loading_dialog_title)
             .setCancelable(false)
+            .create()
+        helpDialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.help_dialog_title)
+            .setMessage(R.string.help_dialog_message)
+            .setPositiveButton(R.string.dialog_button_okay) { _, _ -> }
+            .setNeutralButton(R.string.dialog_button_support) { _, _ ->
+                viewModel.openEmail(this, binding.root)
+            }
             .create()
     }
 
