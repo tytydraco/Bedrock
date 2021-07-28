@@ -424,13 +424,14 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * @param worldId Folder ID to use to find what to delete
      */
     fun uploadWorldToDrive(worldId: String) {
+        _working.postValue(R.string.working_zipping)
+
         rootDocumentFile?.listFiles()?.find { it.name == worldId }?.let {
             val driveFile = DriveFile(
                 name = worldId,
                 description = minecraftWorldUtils.getLevelName(it)
             )
 
-            _working.postValue(R.string.working_zipping)
             val zipFile = DocumentFileZip(contentResolver, it).zip()
 
             _working.postValue(R.string.working_uploading)
