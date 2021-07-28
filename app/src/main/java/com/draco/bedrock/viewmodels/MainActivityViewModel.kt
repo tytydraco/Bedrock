@@ -32,7 +32,6 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.concurrent.TimeUnit
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
     companion object {
@@ -111,7 +110,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Setup Google sign-in stuff
-     * @param activity Activity to request permissions on
+     * @param success Runnable to execute if sign-in succeeds
      * @param error Runnable to execute if sign-in fails
      */
     fun setupGoogle(success: (() -> Unit)?, error: (() -> Unit)?) {
