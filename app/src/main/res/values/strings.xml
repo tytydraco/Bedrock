@@ -7,7 +7,7 @@
     <string name="category_about">About</string>
 
     <string name="developer_url" translatable="false">https://www.github.com/tytydraco</string>
-    <string name="contact_url" translatable="false">mailto:tylernij@gmail.com</string>
+    <string name="contact_url" translatable="false">mailto:tylernij@gmail.com?subject=Bedrock%20Support</string>
 
     <string name="loading_dialog_title">Working</string>
 
