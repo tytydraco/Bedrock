@@ -9,6 +9,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            style="@style/Bedrock.Recycler"
             android:id="@+id/world_list" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     <LinearLayout

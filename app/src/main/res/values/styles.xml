@@ -9,6 +9,12 @@
         <item name="android:padding">@dimen/recycler_item_image_padding</item>
     </style>
 
+    <style name="Bedrock.Recycler" parent="">
+        <item name="android:paddingTop">@dimen/recycler_item_vertical_margin</item>
+        <item name="android:paddingBottom">@dimen/recycler_item_vertical_margin</item>
+        <item name="android:clipToPadding">false</item>
+    </style>
+
     <style name="Bedrock.Divider" parent="">
         <item name="android:background">?android:attr/listDivider</item>
         <item name="android:layout_marginStart">@dimen/divider_horizontal_margin</item>
@@ -26,9 +32,10 @@
     <style name="Widget.Bedrock.CardView" parent="Widget.MaterialComponents.CardView">
         <item name="cardCornerRadius">@dimen/card_corner_radius</item>
         <item name="cardElevation">@dimen/card_elevation</item>
-        <item name="android:layout_marginTop">@dimen/recycler_item_margin</item>
-        <item name="android:layout_marginStart">@dimen/recycler_item_margin</item>
-        <item name="android:layout_marginEnd">@dimen/recycler_item_margin</item>
+        <item name="android:layout_marginTop">@dimen/recycler_item_vertical_margin</item>
+        <item name="android:layout_marginBottom">@dimen/recycler_item_vertical_margin</item>
+        <item name="android:layout_marginStart">@dimen/recycler_item_horizontal_margin</item>
+        <item name="android:layout_marginEnd">@dimen/recycler_item_horizontal_margin</item>
     </style>
 
     <style name="Widget.Bedrock.FloatingActionButton" parent="Widget.MaterialComponents.FloatingActionButton">
