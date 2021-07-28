@@ -128,11 +128,13 @@ class MainActivity : AppCompatActivity() {
         /* Handle loading bars */
         viewModel.working.observe(this) {
             if (it != null) {
+                viewModel.setWakelock(true, window)
                 loadingDialog.setMessage(getString(it))
                 loadingDialog.show()
             } else {
                 loadingDialog.dismiss()
                 binding.swipeRefresh.isRefreshing = false
+                viewModel.setWakelock(false, window)
             }
         }
 

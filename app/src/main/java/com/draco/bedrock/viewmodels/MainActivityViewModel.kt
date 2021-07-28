@@ -4,8 +4,11 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.os.PowerManager
 import android.util.Log
 import android.view.View
+import android.view.Window
+import android.view.WindowManager
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -29,11 +32,19 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.TimeUnit
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
+    companion object {
+        const val WAKELOCK_TAG = "Bedrock::Working"
+    }
+
     val googleAccount = GoogleAccount(application.applicationContext)
     var googleDrive: GoogleDrive? = null
     private var worldsRecyclerAdapter: WorldsRecyclerAdapter? = null
+
+    private val powerManager = application.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
+    private val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK_TAG)
 
     private val sharedPreferences = application
         .applicationContext
@@ -455,5 +466,27 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         }
 
         _working.postValue(null)
+    }
+
+    /**
+     * Toggle wakelocks while doing work
+     * @param state True to keep a wakelock, false to release it
+     */
+    @SuppressLint("WakelockTimeout")
+    fun setWakelock(state: Boolean, window: Window) {
+        when (state) {
+            true -> {
+                if (wakeLock.isHeld)
+                    return
+                wakeLock.acquire()
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+            false -> {
+                if (!wakeLock.isHeld)
+                    return
+                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                wakeLock.release()
+            }
+        }
     }
 }
