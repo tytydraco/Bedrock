@@ -5,7 +5,6 @@ import androidx.documentfile.provider.DocumentFile
 import com.draco.bedrock.repositories.constants.MinecraftConstants
 
 class MinecraftWorldUtils(private val context: Context) {
-
     /**
      * Get the level name of a Minecraft world folder
      * @param worldFolder The DocumentFile for the Minecraft World

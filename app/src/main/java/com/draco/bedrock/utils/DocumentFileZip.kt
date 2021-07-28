@@ -1,7 +1,6 @@
 package com.draco.bedrock.utils
 
-import android.content.Context
-import android.util.Log
+import android.content.ContentResolver
 import androidx.documentfile.provider.DocumentFile
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -11,13 +10,12 @@ import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
 class DocumentFileZip(
-    context: Context,
+    private val contentResolver: ContentResolver,
     private val documentFile: DocumentFile
 ) {
-    private val contentResolver = context.contentResolver
-
     /**
      * Zip the contents of the class documentFile and return the byte array output
+     * @return ByteArray of the Zip file contents
      */
     fun zip(): ByteArray {
         val zip = Zip().apply {
@@ -30,6 +28,7 @@ class DocumentFileZip(
 
     /**
      * UnZip the contents of the zip byte array into the class document file root directory
+     * @param zipBytes ByteArray of the Zip file contents
      */
     fun unZip(zipBytes: ByteArray) {
        UnZip(zipBytes).apply {
@@ -44,6 +43,8 @@ class DocumentFileZip(
 
         /**
          * Recursively add files from directory to zip
+         * @param rootFile Directory to recurse from
+         * @param pwd The current parent working directory
          */
         fun addDirectoryContentsToZip(rootFile: DocumentFile, pwd: String = "") {
             for (file in rootFile.listFiles()) {
@@ -60,6 +61,8 @@ class DocumentFileZip(
 
         /**
          * Read a DocumentFile and return a ByteArray of its contents
+         * @param file DocumentFile to read from
+         * @return The byte contents or null
          */
         fun readFile(file: DocumentFile): ByteArray? {
             contentResolver.openInputStream(file.uri).use {
@@ -69,10 +72,9 @@ class DocumentFileZip(
 
         /**
          * Create an empty folder in the zip file
+         * @param path Path of the empty folder to add
          */
         fun addEmptyFolderToZip(path: String) {
-            Log.d("DocumentZipFile", "Adding Folder: $path")
-
             val zipEntry = ZipEntry(path)
             zipOutputStream.apply {
                 putNextEntry(zipEntry)
@@ -82,10 +84,10 @@ class DocumentFileZip(
 
         /**
          * Add a DocumentFile to the Zip file
+         * @param file DocumentFile to add
+         * @param path Where to place this file
          */
         fun addFileToZip(file: DocumentFile, path: String) {
-            Log.d("DocumentZipFile", "Adding: $path")
-
             val zipEntry = ZipEntry(path)
             val content = readFile(file)
             zipOutputStream.apply {
@@ -118,8 +120,6 @@ class DocumentFileZip(
 
             var zipEntry = zipInputStream.nextEntry
             while (zipEntry != null) {
-                Log.d("DocumentZipFile", "Extracting: ${zipEntry.name}")
-
                 val zipEntryPwd = File(zipEntry.name).parent ?: ""
                 val zipEntryBasename = File(zipEntry.name).name
 
@@ -140,6 +140,7 @@ class DocumentFileZip(
 
         /**
          * Write the current ZipEntry contents to the document file
+         * @param file DocumentFile to write the next entry to
          */
         fun writeFile(file: DocumentFile) {
             contentResolver.openOutputStream(file.uri).use {

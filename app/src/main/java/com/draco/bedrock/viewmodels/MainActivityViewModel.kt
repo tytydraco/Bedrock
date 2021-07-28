@@ -33,6 +33,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     var googleDrive: GoogleDrive? = null
     var worldsRecyclerAdapter: WorldsRecyclerAdapter? = null
 
+    private val contentResolver = getApplication<Application>().contentResolver
+
     val minecraftWorldUtils = MinecraftWorldUtils(application.applicationContext)
 
     var rootDocumentFile: DocumentFile? = null
@@ -56,10 +58,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * @return The Uri for the Worlds folder, or null if it is not persisted
      */
     fun getPersistableUri(): Uri? {
-        val context = getApplication<Application>().applicationContext
-
-        return context
-            .contentResolver
+        return contentResolver
             .persistedUriPermissions
             .find { it.uri.toString().contains(MinecraftConstants.WORLDS_FOLDER_NAME) }
             ?.uri
@@ -77,7 +76,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         if (!minecraftWorldUtils.isValidWorld(selectedFolder))
             return false
 
-        context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
         rootDocumentFile = DocumentFile.fromTreeUri(context, uri)!!
         updateWorldsList()
 
@@ -348,8 +347,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * @param worldId Folder ID to use to find what to delete
      */
     fun uploadWorldToDrive(worldId: String) {
-        val context = getApplication<Application>().applicationContext
-
         _working.postValue(R.string.working_uploading)
 
         rootDocumentFile?.listFiles()?.find { it.name == worldId }?.let {
@@ -359,7 +356,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             )
 
             _working.postValue(R.string.working_zipping)
-            val zipBytes = DocumentFileZip(context, it).zip()
+            val zipBytes = DocumentFileZip(contentResolver, it).zip()
             googleDrive?.createFileIfNecessary(driveFile)
             googleDrive?.writeFileBytes(driveFile, zipBytes)
         }
@@ -372,8 +369,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * @param worldId Folder ID to use to find what to delete
      */
     fun downloadWorldFromDrive(worldId: String) {
-        val context = getApplication<Application>().applicationContext
-
         _working.postValue(R.string.working_downloading)
 
         val driveFile = DriveFile(name = worldId)
@@ -383,7 +378,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 rootDocumentFile?.listFiles()?.find { it.name == worldId }?.delete()
                 rootDocumentFile?.createDirectory(worldId)?.let { subFolder ->
                     _working.postValue(R.string.working_unzipping)
-                    DocumentFileZip(context, subFolder).unZip(it)
+                    DocumentFileZip(contentResolver, subFolder).unZip(it)
                 }
             }
         }
