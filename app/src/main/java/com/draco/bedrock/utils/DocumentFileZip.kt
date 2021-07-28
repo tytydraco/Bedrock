@@ -2,9 +2,7 @@ package com.draco.bedrock.utils
 
 import android.content.ContentResolver
 import androidx.documentfile.provider.DocumentFile
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.File
+import java.io.*
 import java.nio.file.Files
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
@@ -31,15 +29,15 @@ class DocumentFileZip(
      * UnZip the contents of the zip byte array into the class document file root directory
      * @param zipBytes ByteArray of the Zip file contents
      */
-    fun unZip(zipBytes: ByteArray) {
-       UnZip(zipBytes).apply {
+    fun unZip(inputStream: InputStream) {
+        UnZip(inputStream).apply {
             extractZipEntryToDocumentFile()
             close()
         }
     }
 
     private inner class Zip {
-        val tempFile: File = File.createTempFile("zip", "raw")
+        val tempFile: File = File.createTempFile("temp", "zip")
         val byteArrayOutputStream = tempFile.outputStream()
         val zipOutputStream = ZipOutputStream(byteArrayOutputStream)
 
@@ -108,9 +106,8 @@ class DocumentFileZip(
         }
     }
 
-    private inner class UnZip(zipBytes: ByteArray) {
-        val byteArrayInputStream = ByteArrayInputStream(zipBytes)
-        val zipInputStream = ZipInputStream(byteArrayInputStream)
+    private inner class UnZip(inputStream: InputStream) {
+        val zipInputStream = ZipInputStream(inputStream)
 
         /**
          * Iterate and extract all entries
@@ -156,7 +153,6 @@ class DocumentFileZip(
          */
         fun close() {
             zipInputStream.close()
-            byteArrayInputStream.close()
         }
     }
 }

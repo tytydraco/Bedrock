@@ -444,7 +444,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
         val driveFile = DriveFile(name = worldId)
         if (googleDrive?.fileExists(driveFile) == true) {
-            googleDrive?.readFileBytes(driveFile)?.let {
+            googleDrive?.readFileInputStream(driveFile)?.let {
                 /* Recreate any existing world folders */
                 rootDocumentFile?.listFiles()?.find { it.name == worldId }?.delete()
                 rootDocumentFile?.createDirectory(worldId)?.let { subFolder ->

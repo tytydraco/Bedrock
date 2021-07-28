@@ -17,7 +17,10 @@ import com.draco.bedrock.models.DriveFile
 import com.draco.bedrock.repositories.constants.GoogleDriveSpaces
 import com.google.api.client.http.AbstractInputStreamContent
 import com.google.api.client.http.FileContent
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
+import java.io.InputStream
 
 
 /**
@@ -327,5 +330,21 @@ class GoogleDrive(
             .use {
                 it.readBytes()
             }
+    }
+
+    /**
+     * Read input stream of an **existing** Google Drive file.
+     *
+     * @param driveFile Approximate file configuration
+     * @return The input stream content of the file.
+     * @throws FileNotFoundException Desired file does not exist or cannot be found.
+     */
+    fun readFileInputStream(driveFile: DriveFile): InputStream {
+        val file = findFile(driveFile) ?: throw FileNotFoundException()
+
+        return drive
+            .files()
+            .get(file.id)
+            .executeMediaAsInputStream()
     }
 }
