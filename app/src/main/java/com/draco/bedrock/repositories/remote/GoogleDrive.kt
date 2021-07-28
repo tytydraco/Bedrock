@@ -15,6 +15,8 @@ import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File
 import com.draco.bedrock.models.DriveFile
 import com.draco.bedrock.repositories.constants.GoogleDriveSpaces
+import com.google.api.client.http.AbstractInputStreamContent
+import com.google.api.client.http.FileContent
 import java.io.FileNotFoundException
 
 
@@ -231,10 +233,10 @@ class GoogleDrive(
      * Write raw byte stream content to an **existing** Google Drive file.
      *
      * @param file Google Drive File
-     * @param byteArrayContent Byte array content to write to the file
+     * @param content Input stream content
      * @throws FileNotFoundException Desired file does not exist or cannot be found.
      */
-    private fun writeFile(file: File, byteArrayContent: ByteArrayContent) {
+    private fun writeFile(file: File, content: AbstractInputStreamContent) {
         /*
          * Create a copy of the important file metadata; we can't use the old one.
          * The id field cannot be changed so it is left out.
@@ -247,7 +249,7 @@ class GoogleDrive(
 
         drive
             .files()
-            .update(file.id, newFile, byteArrayContent)
+            .update(file.id, newFile, content)
             .execute()
     }
 
@@ -274,6 +276,19 @@ class GoogleDrive(
     fun writeFileBytes(driveFile: DriveFile, content: ByteArray) {
         val file = findFile(driveFile) ?: throw FileNotFoundException()
         val contentBytes = ByteArrayContent(file.mimeType, content)
+        writeFile(file, contentBytes)
+    }
+
+    /**
+     * Write byte content to an **existing** Google Drive file.
+     *
+     * @param driveFile Approximate file configuration
+     * @param rawFile The raw File to upload
+     * @throws FileNotFoundException Desired file does not exist or cannot be found.
+     */
+    fun writeFileRaw(driveFile: DriveFile, rawFile: java.io.File) {
+        val file = findFile(driveFile) ?: throw FileNotFoundException()
+        val contentBytes = FileContent(file.mimeType, rawFile)
         writeFile(file, contentBytes)
     }
 

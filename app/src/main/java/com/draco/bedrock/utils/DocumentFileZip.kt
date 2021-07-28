@@ -5,6 +5,7 @@ import androidx.documentfile.provider.DocumentFile
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.nio.file.Files
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
@@ -17,13 +18,13 @@ class DocumentFileZip(
      * Zip the contents of the class documentFile and return the byte array output
      * @return ByteArray of the Zip file contents
      */
-    fun zip(): ByteArray {
+    fun zip(): File {
         val zip = Zip().apply {
             addDirectoryContentsToZip(documentFile)
             close()
         }
 
-        return zip.byteArrayOutputStream.toByteArray()
+        return zip.tempFile
     }
 
     /**
@@ -38,7 +39,8 @@ class DocumentFileZip(
     }
 
     private inner class Zip {
-        val byteArrayOutputStream = ByteArrayOutputStream()
+        val tempFile: File = File.createTempFile("zip", "raw")
+        val byteArrayOutputStream = tempFile.outputStream()
         val zipOutputStream = ZipOutputStream(byteArrayOutputStream)
 
         /**

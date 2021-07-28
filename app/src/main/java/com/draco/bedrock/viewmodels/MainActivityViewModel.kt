@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import android.view.View
 import androidx.documentfile.provider.DocumentFile
@@ -428,9 +426,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             )
 
             _working.postValue(R.string.working_zipping)
-            val zipBytes = DocumentFileZip(contentResolver, it).zip()
+            val zipFile = DocumentFileZip(contentResolver, it).zip()
             googleDrive?.createFileIfNecessary(driveFile)
-            googleDrive?.writeFileBytes(driveFile, zipBytes)
+            googleDrive?.writeFileRaw(driveFile, zipFile)
+            zipFile.delete()
         }
 
         _working.postValue(null)
