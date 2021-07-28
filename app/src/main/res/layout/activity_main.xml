@@ -21,7 +21,7 @@
         <ImageView
             android:layout_width="@dimen/no_worlds_image_size"
             android:layout_height="@dimen/no_worlds_image_size"
-            android:src="@drawable/ic_baseline_warning_24"
+            android:src="@drawable/ic_baseline_sports_esports_24"
             android:contentDescription="@string/no_worlds" />
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="wrap_content"
