@@ -100,7 +100,7 @@ class DocumentFileZip(
          * Close open streams
          */
         fun close() {
-            zipOutputStream.closeEntry()
+            zipOutputStream.close()
             byteArrayOutputStream.close()
         }
     }
