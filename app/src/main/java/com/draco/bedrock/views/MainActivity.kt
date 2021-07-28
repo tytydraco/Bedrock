@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.draco.bedrock.R
 import com.draco.bedrock.databinding.ActivityMainBinding
+import com.draco.bedrock.utils.HelpHelper
 import com.draco.bedrock.viewmodels.MainActivityViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -19,7 +20,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var loadingDialog: AlertDialog
-    private lateinit var helpDialog: AlertDialog
+    private lateinit var helpHelper: HelpHelper
 
     private val setupGoogleLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         setupGoogle()
@@ -34,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupDialogs()
+        setupLateInit()
         setupObservables()
         setupGoogle()
         setupSaf()
@@ -47,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.help.setOnClickListener {
-            helpDialog.show()
+            helpHelper.safHelpDialog.show()
         }
 
         viewModel.piracyCheck(this)
@@ -158,20 +159,13 @@ class MainActivity : AppCompatActivity() {
     /**
      * Setup Alert Dialogs
      */
-    private fun setupDialogs() {
+    private fun setupLateInit() {
         loadingDialog = MaterialAlertDialogBuilder(this)
             .setView(R.layout.dialog_progress)
             .setTitle(R.string.loading_dialog_title)
             .setCancelable(false)
             .create()
-        helpDialog = MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.help_dialog_title)
-            .setMessage(R.string.help_dialog_message)
-            .setPositiveButton(R.string.dialog_button_okay) { _, _ -> }
-            .setNeutralButton(R.string.dialog_button_support) { _, _ ->
-                viewModel.openEmail(this, binding.root)
-            }
-            .create()
+        helpHelper = HelpHelper(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

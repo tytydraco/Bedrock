@@ -27,8 +27,8 @@
     <string name="confirm_dialog_delete_device_all_message">Are you sure you want to erase all your device files?</string>
     <string name="confirm_dialog_delete_cloud_all_message">Are you sure you want to erase all your cloud files?</string>
 
-    <string name="help_dialog_title">Help</string>
-    <string name="help_dialog_message">Make sure that your Minecraft File Storage setting (Settings->Profile->File Storage Location) is set to "External" and not "Application". Apps are not allowed to access the "Application" worlds.</string>
+    <string name="saf_help_dialog_title">Help</string>
+    <string name="saf_help_dialog_message">Make sure that your Minecraft File Storage setting (Settings->Profile->File Storage Location) is set to \"External\" and not \"Application\". Apps are not allowed to access the \"Application\" worlds.</string>
 
     <string name="dialog_button_okay">Okay</string>
     <string name="dialog_button_support">Support</string>
@@ -36,7 +36,7 @@
     <string name="dialog_button_no">No</string>
 
     <string name="setup_sign_in">Sign-in to Google and grant Google Drive access to continue</string>
-    <string name="setup_saf">This app needs access to your "minecraftWorlds" folder. Navigate to /sdcard/games/com.mojang/minecraftWorlds, and select it.</string>
+    <string name="setup_saf">This app needs access to your Minecraft Worlds folder.\n\nSelect the <b>/sdcard/games/com.mojang/minecraftWorlds</b> folder.</string>
 
     <string name="desc_status_phone">Stored locally</string>
     <string name="desc_status_cloud">Stored on the cloud</string>

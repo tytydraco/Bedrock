@@ -36,7 +36,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/help"
             android:layout_marginTop="@dimen/help_button_top_margin"
-            android:textAlignment="center"
             android:text="@string/button_help" />
     </LinearLayout>
 </RelativeLayout>

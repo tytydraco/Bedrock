@@ -7,12 +7,15 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.draco.bedrock.R
 import com.draco.bedrock.databinding.ActivitySetupSafBinding
+import com.draco.bedrock.utils.HelpHelper
 import com.draco.bedrock.viewmodels.SetupSafActivityViewModel
 import com.google.android.material.snackbar.Snackbar
 
 class SetupSafActivity : AppCompatActivity() {
     private val viewModel: SetupSafActivityViewModel by viewModels()
     private lateinit var binding: ActivitySetupSafBinding
+
+    private lateinit var helpHelper: HelpHelper
 
     private val openWorldsFolderLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         val uri = it.data?.data
@@ -28,9 +31,15 @@ class SetupSafActivity : AppCompatActivity() {
         binding = ActivitySetupSafBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        helpHelper = HelpHelper(this)
+
         binding.grant.setOnClickListener {
             val intent = Intent().setAction(Intent.ACTION_OPEN_DOCUMENT_TREE)
             openWorldsFolderLauncher.launch(intent)
+        }
+
+        binding.help.setOnClickListener {
+            helpHelper.safHelpDialog.show()
         }
     }
 

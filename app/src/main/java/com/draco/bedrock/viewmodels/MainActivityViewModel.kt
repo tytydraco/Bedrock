@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.PowerManager
 import android.util.Log
 import android.view.View
@@ -486,23 +484,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 wakeLock.release()
             }
-        }
-    }
-
-    /**
-     * Open email app for support
-     * @param activity Host activity to open from
-     * @param view Snackbar view for error message
-     */
-    fun openEmail(activity: Activity, view: View) {
-        val context = getApplication<Application>().applicationContext
-        val url = context.getString(R.string.contact_url)
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        try {
-            activity.startActivity(intent)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Snackbar.make(view, context.getString(R.string.snackbar_intent_failed), Snackbar.LENGTH_SHORT).show()
         }
     }
 }
