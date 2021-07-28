@@ -58,7 +58,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     private val minecraftWorldUtils = MinecraftWorldUtils(application.applicationContext)
 
-    private var rootDocumentFile: DocumentFile? = null
+    var rootDocumentFile: DocumentFile? = null
 
     var checker: PiracyChecker? = null
 
@@ -266,6 +266,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * @param context View-bound context
      */
     private fun prepareRecyclerAdapter(context: Context) {
+        if (worldsRecyclerAdapter != null)
+            return
+
         worldsRecyclerAdapter = WorldsRecyclerAdapter(context, mutableListOf()).apply {
             setHasStableIds(true)
 

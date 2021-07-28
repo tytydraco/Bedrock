@@ -96,6 +96,9 @@ class MainActivity : AppCompatActivity() {
      * Setup file access
      */
     private fun setupSaf() {
+        if (viewModel.rootDocumentFile != null)
+            return
+
         if (viewModel.getPersistableUri())
             viewModel.updateWorldsList()
         else {
@@ -108,6 +111,9 @@ class MainActivity : AppCompatActivity() {
      * Setup Google sign-in stuff
      */
     private fun setupGoogle() {
+        if (viewModel.googleDrive != null)
+            return
+
         viewModel.setupGoogle(
             {
                 viewModel.updateWorldsList()
