@@ -3,11 +3,8 @@ package com.draco.bedrock.views
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
 import com.draco.bedrock.databinding.ActivitySetupBinding
-import com.draco.bedrock.fragments.setup.SetupGoogleFragment
-import com.draco.bedrock.fragments.setup.SetupSafFragment
 import com.draco.bedrock.viewmodels.SetupActivityViewModel
 
 class SetupActivity : FragmentActivity() {

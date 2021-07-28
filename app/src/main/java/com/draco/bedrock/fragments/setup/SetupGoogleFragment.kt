@@ -1,7 +1,6 @@
 package com.draco.bedrock.fragments.setup
 
 import android.app.Activity
-import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -9,8 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import com.draco.bedrock.R
 import com.draco.bedrock.databinding.ActivitySetupGoogleBinding
 import com.draco.bedrock.fragments.SetupFragment
@@ -22,7 +19,7 @@ class SetupGoogleFragment : SetupFragment() {
     private lateinit var binding: ActivitySetupGoogleBinding
 
     private lateinit var googleAccount: GoogleAccount
-    var googleDrive: GoogleDrive? = null
+    private var googleDrive: GoogleDrive? = null
 
     private val explicitLoginHandler = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         googleAccount.handleExplicitSignIn(it)

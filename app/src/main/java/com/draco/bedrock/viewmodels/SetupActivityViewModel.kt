@@ -2,7 +2,6 @@ package com.draco.bedrock.viewmodels
 
 import android.app.Application
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.AndroidViewModel
 import androidx.viewpager2.widget.ViewPager2
