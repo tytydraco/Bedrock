@@ -23,6 +23,7 @@ import com.draco.bedrock.repositories.remote.GoogleAccount
 import com.draco.bedrock.repositories.remote.GoogleDrive
 import com.draco.bedrock.utils.DocumentFileZip
 import com.draco.bedrock.utils.MinecraftWorldUtils
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -52,6 +53,19 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
+    /**
+     * Create and show a dialog to confirm changes
+     * @param context View-bound context
+     * @param messageResId String Res-id to show in a dialog
+     * @param action Runnable to execute if user confirms
+     */
+    fun createConfirmDialog(context: Context, messageResId: Int, action: () -> Unit) =
+        MaterialAlertDialogBuilder(context)
+            .setTitle(R.string.confirm_dialog_title)
+            .setMessage(messageResId)
+            .setPositiveButton(R.string.dialog_button_yes) { _, _ -> action() }
+            .setNegativeButton(R.string.dialog_button_no) { _, _ -> }
+            .show()
 
     /**
      * Check if the user already has SAF permissions
@@ -192,37 +206,45 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     private fun prepareRecyclerAdapter(context: Context) {
         worldsRecyclerAdapter = WorldsRecyclerAdapter(context, mutableListOf()).apply {
             uploadHook = { view, worldName ->
-                viewModelScope.launch(Dispatchers.IO) {
-                    safeCatch(view) {
-                        uploadWorldToDrive(worldName)
-                        updateWorldsList()
+                createConfirmDialog(view.context, R.string.confirm_dialog_upload_message) {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        safeCatch(view) {
+                            uploadWorldToDrive(worldName)
+                            updateWorldsList()
+                        }
                     }
                 }
             }
 
             downloadHook = { view, worldName ->
-                viewModelScope.launch(Dispatchers.IO) {
-                    safeCatch(view) {
-                        downloadWorldFromDrive(worldName)
-                        updateWorldsList()
+                createConfirmDialog(view.context, R.string.confirm_dialog_download_message) {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        safeCatch(view) {
+                            downloadWorldFromDrive(worldName)
+                            updateWorldsList()
+                        }
                     }
                 }
             }
 
             deleteDeviceHook = { view, worldName ->
-                viewModelScope.launch(Dispatchers.IO) {
-                    safeCatch(view) {
-                        deleteWorldFromDevice(worldName)
-                        updateWorldsList()
+                createConfirmDialog(view.context, R.string.confirm_dialog_delete_device_message) {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        safeCatch(view) {
+                            deleteWorldFromDevice(worldName)
+                            updateWorldsList()
+                        }
                     }
                 }
             }
 
             deleteCloudHook = { view, worldName ->
-                viewModelScope.launch(Dispatchers.IO) {
-                    safeCatch(view) {
-                        deleteWorldFromDrive(worldName)
-                        updateWorldsList()
+                createConfirmDialog(view.context, R.string.confirm_dialog_delete_cloud_message) {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        safeCatch(view) {
+                            deleteWorldFromDrive(worldName)
+                            updateWorldsList()
+                        }
                     }
                 }
             }

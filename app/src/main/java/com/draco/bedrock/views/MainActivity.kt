@@ -166,17 +166,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Create and show a dialog to confirm changes
-     */
-    private fun createConfirmDialog(messageResId: Int, action: () -> Unit) =
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.confirm_dialog_title)
-            .setMessage(messageResId)
-            .setPositiveButton(R.string.dialog_button_yes) { _, _ -> action() }
-            .setNegativeButton(R.string.dialog_button_no) { _, _ -> }
-            .show()
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.settings -> {
@@ -185,7 +174,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.upload_all -> {
-                createConfirmDialog(R.string.confirm_dialog_upload_all_message) {
+                viewModel.createConfirmDialog(this, R.string.confirm_dialog_upload_all_message) {
                     viewModel.safeCatch(binding.worldList) {
                         viewModel.uploadAll()
                     }
@@ -193,7 +182,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.download_all -> {
-                createConfirmDialog(R.string.confirm_dialog_download_all_message) {
+                viewModel.createConfirmDialog(this, R.string.confirm_dialog_download_all_message) {
                     viewModel.safeCatch(binding.worldList) {
                         viewModel.downloadAll()
                     }
@@ -201,7 +190,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.delete_device_all -> {
-                createConfirmDialog(R.string.confirm_dialog_delete_device_all_message) {
+                viewModel.createConfirmDialog(this, R.string.confirm_dialog_delete_device_all_message) {
                     viewModel.safeCatch(binding.worldList) {
                         viewModel.deleteAllDevice()
                     }
@@ -209,7 +198,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.delete_cloud_all -> {
-                createConfirmDialog(R.string.confirm_dialog_delete_cloud_all_message) {
+                viewModel.createConfirmDialog(this, R.string.confirm_dialog_delete_cloud_all_message) {
                     viewModel.safeCatch(binding.worldList) {
                         viewModel.deleteAllCloud()
                     }
