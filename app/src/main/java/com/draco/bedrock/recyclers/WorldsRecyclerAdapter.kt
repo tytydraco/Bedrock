@@ -48,6 +48,10 @@ class WorldsRecyclerAdapter(
 
     override fun getItemCount() = worldFileList.size
 
+    override fun getItemId(position: Int): Long {
+        return worldFileList[position].id.hashCode().toLong()
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = RecyclerWorldItemBinding.inflate(LayoutInflater.from(context), parent, false)
         return ViewHolder(binding)

@@ -268,6 +268,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      */
     private fun prepareRecyclerAdapter(context: Context) {
         worldsRecyclerAdapter = WorldsRecyclerAdapter(context, mutableListOf()).apply {
+            setHasStableIds(true)
+
             uploadHook = { view, worldName ->
                 createConfirmDialog(view.context, R.string.confirm_dialog_upload_message) {
                     viewModelScope.launch(Dispatchers.IO) {
