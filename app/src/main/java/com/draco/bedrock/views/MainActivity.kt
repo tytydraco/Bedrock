@@ -22,12 +22,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var loadingDialog: AlertDialog
     private lateinit var helpHelper: HelpHelper
 
-    private val setupGoogleLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        setupGoogle()
-    }
-
-    private val setupSafLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        setupSaf()
+    private val setupCheckLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        setupCheck()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,8 +33,7 @@ class MainActivity : AppCompatActivity() {
 
         setupLateInit()
         setupObservables()
-        setupGoogle()
-        setupSaf()
+        setupCheck()
 
         viewModel.prepareRecycler(this, binding.worldList)
 
@@ -98,36 +93,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Setup file access
+     * Check what needs to be setup
      */
-    private fun setupSaf() {
-        if (viewModel.rootDocumentFile != null)
-            return
-
-        if (viewModel.getPersistableUri())
-            viewModel.updateWorldsList()
-        else {
-            val intent = Intent(this, SetupSafActivity::class.java)
-            setupSafLauncher.launch(intent)
-        }
-    }
-
-    /**
-     * Setup Google sign-in stuff
-     */
-    private fun setupGoogle() {
-        if (viewModel.googleDrive != null)
-            return
-
-        viewModel.setupGoogle(
-            {
+    private fun setupCheck() {
+        viewModel.getSetupActivityBundle {
+            /* No permissions necessary! Just refresh. */
+            if (it.isEmpty)
                 viewModel.updateWorldsList()
-            },
-            {
-                val intent = Intent(this, SetupGoogleActivity::class.java)
-                setupGoogleLauncher.launch(intent)
+            else {
+                val intent = Intent(this, SetupActivity::class.java)
+                    .putExtras(it)
+                setupCheckLauncher.launch(intent)
             }
-        )
+        }
     }
 
     /**

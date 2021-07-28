@@ -2,7 +2,7 @@ package com.draco.bedrock.utils
 
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
-import com.draco.bedrock.repositories.constants.MinecraftConstants
+import com.draco.bedrock.repositories.constants.Minecraft
 
 class MinecraftWorldUtils(private val context: Context) {
     /**
@@ -11,7 +11,7 @@ class MinecraftWorldUtils(private val context: Context) {
      * @return Level name string, or null
      */
     fun getLevelName(worldFolder: DocumentFile): String? {
-        worldFolder.listFiles().find { it.name == MinecraftConstants.LEVEL_FILE_NAME }?.let {
+        worldFolder.listFiles().find { it.name == Minecraft.LEVEL_FILE_NAME }?.let {
             context.contentResolver.openInputStream(it.uri).use { inputStream ->
                 inputStream?.bufferedReader().use { bufferedReader ->
                     return bufferedReader?.readText()
@@ -28,5 +28,5 @@ class MinecraftWorldUtils(private val context: Context) {
      * @return True if this is a valid world folder
      */
     fun isValidWorld(worldFolder: DocumentFile) =
-        worldFolder.name == MinecraftConstants.WORLDS_FOLDER_NAME && worldFolder.isDirectory
+        worldFolder.name == Minecraft.WORLDS_FOLDER_NAME && worldFolder.isDirectory
 }

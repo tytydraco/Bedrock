@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.os.Bundle
 import android.os.PowerManager
 import android.util.Log
 import android.view.View
@@ -17,11 +18,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.draco.bedrock.R
+import com.draco.bedrock.fragments.SetupFragment
+import com.draco.bedrock.fragments.setup.SetupGoogleFragment
+import com.draco.bedrock.fragments.setup.SetupSafFragment
 import com.draco.bedrock.models.DriveFile
 import com.draco.bedrock.models.WorldFile
 import com.draco.bedrock.recyclers.WorldsRecyclerAdapter
-import com.draco.bedrock.repositories.constants.MinecraftConstants
-import com.draco.bedrock.repositories.constants.WorldFileType
+import com.draco.bedrock.repositories.constants.Minecraft
+import com.draco.bedrock.repositories.constants.SetupSteps
+import com.draco.bedrock.repositories.constants.WorldFileTypes
 import com.draco.bedrock.repositories.remote.GoogleAccount
 import com.draco.bedrock.repositories.remote.GoogleDrive
 import com.draco.bedrock.utils.DocumentFileZip
@@ -71,6 +76,36 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     init {
         /* Try to initialize the rootDocumentFile if we already granted it permissions */
         getPersistableUri()
+    }
+
+    /**
+     * Check which setup fragments need to be shown
+     * @param completedListener A runnable that is passed a bundle with setup steps
+     */
+    fun getSetupActivityBundle(completedListener: (Bundle) -> Unit) {
+        val bundle = Bundle()
+
+        /* We need file access */
+        if (rootDocumentFile == null) {
+            if (!getPersistableUri())
+                bundle.putBoolean(SetupSteps.SAF, true)
+        }
+
+        /* We need Google Drive access; delay completed listener until we can be sure */
+        if (googleDrive == null) {
+            setupGoogle(
+                {
+                    completedListener.invoke(bundle)
+                },
+                {
+                    bundle.putBoolean(SetupSteps.GOOGLE, true)
+                    completedListener.invoke(bundle)
+                }
+            )
+        } else {
+            /* If we already have Google Drive setup, just return what we have instantly */
+            completedListener.invoke(bundle)
+        }
     }
 
     /**
@@ -150,7 +185,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     fun getPersistableUri(): Boolean {
         contentResolver
             .persistedUriPermissions
-            .find { it.uri.toString().contains(MinecraftConstants.WORLDS_FOLDER_NAME) }
+            .find { it.uri.toString().contains(Minecraft.WORLDS_FOLDER_NAME) }
             ?.uri?.let {
                 val context = getApplication<Application>().applicationContext
                 rootDocumentFile = DocumentFile.fromTreeUri(context, it)!!
@@ -187,7 +222,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                         WorldFile(
                             name,
                             id,
-                            WorldFileType.LOCAL
+                            WorldFileTypes.LOCAL
                         )
                     )
                 }
@@ -206,13 +241,13 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                             WorldFile(
                                 name,
                                 id,
-                                WorldFileType.REMOTE
+                                WorldFileTypes.REMOTE
                             )
                         )
                     }
                 } else {
                     /* If we have this world logged already, it is present on local and remote */
-                    matchingLocalFile.type = WorldFileType.LOCAL_REMOTE
+                    matchingLocalFile.type = WorldFileTypes.LOCAL_REMOTE
                 }
             }
 

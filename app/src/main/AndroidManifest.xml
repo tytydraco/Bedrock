@@ -27,10 +27,7 @@
             android:name=".views.SettingsActivity"
             android:label="@string/title_settings" />
 
-        <activity android:name=".views.SetupGoogleActivity"
-            android:label="@string/title_setup" />
-
-        <activity android:name=".views.SetupSafActivity"
+        <activity android:name=".views.SetupActivity"
             android:label="@string/title_setup" />
     </application>
 

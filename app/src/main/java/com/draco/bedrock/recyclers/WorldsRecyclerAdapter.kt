@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.draco.bedrock.R
 import com.draco.bedrock.databinding.RecyclerWorldItemBinding
 import com.draco.bedrock.models.WorldFile
-import com.draco.bedrock.repositories.constants.WorldFileType
+import com.draco.bedrock.repositories.constants.WorldFileTypes
 
 class WorldsRecyclerAdapter(
     private val context: Context,
@@ -64,7 +64,7 @@ class WorldsRecyclerAdapter(
         holder.binding.id.text = worldFile.id
 
         when (worldFile.type) {
-            WorldFileType.LOCAL -> {
+            WorldFileTypes.LOCAL -> {
                 holder.binding.statusPhone.setColorFilter(accentColor)
                 holder.binding.statusCloud.setColorFilter(defaultColor)
 
@@ -73,7 +73,7 @@ class WorldsRecyclerAdapter(
                 holder.binding.download.isEnabled = false
                 holder.binding.upload.isEnabled = true
             }
-            WorldFileType.REMOTE -> {
+            WorldFileTypes.REMOTE -> {
                 holder.binding.statusPhone.setColorFilter(defaultColor)
                 holder.binding.statusCloud.setColorFilter(accentColor)
 
@@ -82,7 +82,7 @@ class WorldsRecyclerAdapter(
                 holder.binding.download.isEnabled = true
                 holder.binding.upload.isEnabled = false
             }
-            WorldFileType.LOCAL_REMOTE -> {
+            WorldFileTypes.LOCAL_REMOTE -> {
                 holder.binding.statusPhone.setColorFilter(accentColor)
                 holder.binding.statusCloud.setColorFilter(accentColor)
 
