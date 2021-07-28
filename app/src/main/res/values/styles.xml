@@ -8,4 +8,12 @@
     <style name="Bedrock.ImageView" parent="">
         <item name="android:padding">@dimen/recycler_item_image_padding</item>
     </style>
+
+    <style name="Bedrock.Divider" parent="">
+        <item name="android:background">?android:attr/listDivider</item>
+        <item name="android:layout_marginStart">@dimen/divider_horizontal_margin</item>
+        <item name="android:layout_marginEnd">@dimen/divider_horizontal_margin</item>
+        <item name="android:layout_marginTop">@dimen/divider_vertical_margin</item>
+        <item name="android:layout_marginBottom">@dimen/divider_vertical_margin</item>
+    </style>
 </resources>

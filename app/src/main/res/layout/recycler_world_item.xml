@@ -58,9 +58,12 @@
                     android:maxLines="1"
                     android:ellipsize="end" />
             </LinearLayout>
-
-
         </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/divider_height"
+            style="@style/Bedrock.Divider" />
 
         <LinearLayout
             android:layout_width="wrap_content"
