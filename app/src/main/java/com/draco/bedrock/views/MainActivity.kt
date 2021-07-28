@@ -12,7 +12,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.draco.bedrock.R
 import com.draco.bedrock.databinding.ActivityMainBinding
-import com.draco.bedrock.repositories.remote.GoogleDrive
 import com.draco.bedrock.viewmodels.MainActivityViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -21,20 +20,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var loadingDialog: AlertDialog
-    private lateinit var needAccessDialog: AlertDialog
-    private lateinit var badFolderDialog: AlertDialog
-    private lateinit var signInFailed: AlertDialog
-    private lateinit var driveAccessFailed: AlertDialog
 
-    private val explicitLoginHandler = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        viewModel.googleAccount.handleExplicitSignIn(it)
+    private val setupGoogleLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        setupGoogle()
+        viewModel.updateWorldsList()
     }
 
-    private val openWorldsFolderHandler = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        val uri = it.data?.data
-
-        if (uri == null || !viewModel.takePersistableUri(uri))
-            badFolderDialog.show()
+    private val setupSafLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        setupSaf()
+        viewModel.updateWorldsList()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         setupDialogs()
         setupObservables()
         setupGoogle()
+        setupSaf()
 
         viewModel.prepareRecycler(this, binding.worldList)
 
@@ -53,21 +48,7 @@ class MainActivity : AppCompatActivity() {
             viewModel.updateWorldsList()
         }
 
-        if (viewModel.getPersistableUri() == null)
-            needAccessDialog.show()
-
         viewModel.piracyCheck(this)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == GoogleDrive.REQUEST_CODE_CHECK_PERMISSIONS) {
-            if (resultCode == Activity.RESULT_OK)
-                viewModel.updateWorldsList()
-            else
-                driveAccessFailed.show()
-        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -114,15 +95,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
+     * Setup file access
+     */
+    private fun setupSaf() {
+        if (viewModel.getPersistableUri())
+            viewModel.updateWorldsList()
+        else {
+            val intent = Intent(this, SetupSafActivity::class.java)
+            setupSafLauncher.launch(intent)
+        }
+    }
+
+    /**
      * Setup Google sign-in stuff
      */
     private fun setupGoogle() {
-        viewModel.setupGoogle(this) {
-            signInFailed.show()
-        }
-
-        if (viewModel.googleAccount.account == null)
-            viewModel.googleAccount.discoverAccountExplicit(explicitLoginHandler)
+        viewModel.setupGoogle(
+            {
+                viewModel.updateWorldsList()
+            },
+            {
+                val intent = Intent(this, SetupGoogleActivity::class.java)
+                setupGoogleLauncher.launch(intent)
+            }
+        )
     }
 
     /**
@@ -158,43 +154,6 @@ class MainActivity : AppCompatActivity() {
             .setTitle(R.string.loading_dialog_title)
             .setCancelable(false)
             .create()
-
-        needAccessDialog = MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.need_access_dialog_title)
-            .setMessage(R.string.need_access_dialog_message)
-            .setCancelable(false)
-            .setPositiveButton(R.string.dialog_button_okay) { _, _ ->
-                val intent = Intent().setAction(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                openWorldsFolderHandler.launch(intent)
-            }
-            .create()
-
-        badFolderDialog = MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.bad_folder_dialog_title)
-            .setMessage(R.string.bad_folder_dialog_message)
-            .setCancelable(false)
-            .setPositiveButton(R.string.dialog_button_try_again) { _, _ ->
-                needAccessDialog.show()
-            }
-            .create()
-
-        signInFailed = MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.sign_in_failed_dialog_title)
-            .setMessage(R.string.sign_in_failed_dialog_message)
-            .setCancelable(false)
-            .setPositiveButton(R.string.dialog_button_try_again) { _, _ ->
-                viewModel.googleAccount.discoverAccountExplicit(explicitLoginHandler)
-            }
-            .create()
-
-        driveAccessFailed = MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.drive_access_failed_dialog_title)
-            .setMessage(R.string.drive_access_failed_dialog_message)
-            .setCancelable(false)
-            .setPositiveButton(R.string.dialog_button_try_again) { _, _ ->
-                viewModel.googleDrive?.requestPermissions(this)
-            }
-            .create()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -204,8 +163,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (needAccessDialog.isShowing)
-            needAccessDialog.dismiss()
         viewModel.checker?.destroy()
     }
 }

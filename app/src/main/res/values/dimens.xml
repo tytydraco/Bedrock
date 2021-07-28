@@ -11,4 +11,7 @@
     <dimen name="divider_height">1dp</dimen>
     <dimen name="divider_horizontal_margin">12dp</dimen>
     <dimen name="divider_vertical_margin">8dp</dimen>
+    <dimen name="floating_action_button_margin">12dp</dimen>
+    <dimen name="setup_image_text_pair_horizontal_margin">60dp</dimen>
+    <dimen name="setup_image_size">200dp</dimen>
 </resources>

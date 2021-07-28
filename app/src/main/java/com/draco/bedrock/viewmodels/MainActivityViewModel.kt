@@ -62,9 +62,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     init {
         /* Try to initialize the rootDocumentFile if we already granted it permissions */
-        getPersistableUri()?.let {
-            rootDocumentFile = DocumentFile.fromTreeUri(application.applicationContext, it)!!
-        }
+        getPersistableUri()
     }
 
     /**
@@ -107,17 +105,19 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * @param activity Activity to request permissions on
      * @param error Runnable to execute if sign-in fails
      */
-    fun setupGoogle(activity: Activity, error: (() -> Unit)?) {
+    fun setupGoogle(success: (() -> Unit)?, error: (() -> Unit)?) {
         googleAccount.registerLoginHandler {
             if (it != null) {
                 initGoogleDrive()
-                googleDrive?.requestPermissionsIfNecessary(activity)
 
                 if (googleDrive?.hasPermissions() == true)
-                    updateWorldsList()
+                    success?.invoke()
+                else
+                    error?.invoke()
             } else
                 error?.invoke()
         }
+        googleAccount.discoverAccountImplicit()
     }
 
     /**
@@ -136,33 +136,19 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     /**
-     * Check if the user already has SAF permissions
-     * @return The Uri for the Worlds folder, or null if it is not persisted
+     * Check if the user already has SAF permissions and set the root document
+     * @return True if we were able to set the root document, false if no persisted Uri
      */
-    fun getPersistableUri(): Uri? {
-        return contentResolver
+    fun getPersistableUri(): Boolean {
+        contentResolver
             .persistedUriPermissions
             .find { it.uri.toString().contains(MinecraftConstants.WORLDS_FOLDER_NAME) }
-            ?.uri
-    }
-
-    /**
-     * Store the persistable Uri and update the root document
-     * @param uri OPEN_DOCUMENT_TREE uri
-     * @return True if we persisted it, false if the selected world is invalid
-     */
-    fun takePersistableUri(uri: Uri): Boolean {
-        val context = getApplication<Application>().applicationContext
-
-        val selectedFolder = DocumentFile.fromTreeUri(context, uri)!!
-        if (!minecraftWorldUtils.isValidWorld(selectedFolder))
-            return false
-
-        contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-        rootDocumentFile = DocumentFile.fromTreeUri(context, uri)!!
-        updateWorldsList()
-
-        return true
+            ?.uri?.let {
+                val context = getApplication<Application>().applicationContext
+                rootDocumentFile = DocumentFile.fromTreeUri(context, it)!!
+                return true
+            }
+        return false
     }
 
     /**

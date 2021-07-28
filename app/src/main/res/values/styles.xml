@@ -17,6 +17,12 @@
         <item name="android:layout_marginBottom">@dimen/divider_vertical_margin</item>
     </style>
 
+    <style name="Bedrock.SetupImageTextPair" parent="">
+        <item name="android:gravity">center</item>
+        <item name="android:layout_marginStart">@dimen/setup_image_text_pair_horizontal_margin</item>
+        <item name="android:layout_marginEnd">@dimen/setup_image_text_pair_horizontal_margin</item>
+    </style>
+
     <style name="Widget.Bedrock.CardView" parent="Widget.MaterialComponents.CardView">
         <item name="cardCornerRadius">@dimen/card_corner_radius</item>
         <item name="cardElevation">@dimen/card_elevation</item>
@@ -24,5 +30,10 @@
         <item name="android:layout_marginBottom">@dimen/recycler_item_margin</item>
         <item name="android:layout_marginStart">@dimen/recycler_item_margin</item>
         <item name="android:layout_marginEnd">@dimen/recycler_item_margin</item>
+    </style>
+
+    <style name="Widget.Bedrock.FloatingActionButton" parent="Widget.MaterialComponents.FloatingActionButton">
+        <item name="android:layout_marginBottom">@dimen/floating_action_button_margin</item>
+        <item name="android:layout_marginEnd">@dimen/floating_action_button_margin</item>
     </style>
 </resources>

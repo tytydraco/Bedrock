@@ -2,6 +2,7 @@
     <string name="app_name">Bedrock</string>
 
     <string name="title_settings">Settings</string>
+    <string name="title_setup">Setup</string>
 
     <string name="category_about">About</string>
 
@@ -12,18 +13,9 @@
 
     <string name="snackbar_intent_failed">Could not handle this action</string>
     <string name="snackbar_exception">Something went wrong; try again later</string>
-
-    <string name="need_access_dialog_title">File access</string>
-    <string name="need_access_dialog_message">This app needs access to your "minecraftWorlds" folder. Navigate to /sdcard/games/com.mojang/minecraftWorlds, and select it.</string>
-
-    <string name="bad_folder_dialog_title">Bad selection</string>
-    <string name="bad_folder_dialog_message">This folder doesn\'t look right. Make sure to select the correct directory.</string>
-
-    <string name="sign_in_failed_dialog_title">Sign-in failed</string>
-    <string name="sign_in_failed_dialog_message">Failed to sign-in to Google.</string>
-
-    <string name="drive_access_failed_dialog_title">Google Drive access failed</string>
-    <string name="drive_access_failed_dialog_message">Failed to acquire access to Google Drive.</string>
+    <string name="snackbar_sign_in_failed">Failed to sign-in to Google.</string>
+    <string name="snackbar_bad_folder">This folder doesn\'t look right. Make sure to select the correct directory.</string>
+    <string name="snackbar_drive_access_failed">Failed to acquire access to Google Drive.</string>
 
     <string name="confirm_dialog_title">Confirm changes</string>
     <string name="confirm_dialog_upload_message">Are you sure you want to upload your local files to the cloud?</string>
@@ -40,9 +32,15 @@
     <string name="dialog_button_no">No</string>
     <string name="dialog_button_try_again">Try again</string>
 
+    <string name="setup_sign_in">Sign-in to Google and grant Google Drive access to continue</string>
+    <string name="setup_saf">This app needs access to your "minecraftWorlds" folder. Navigate to /sdcard/games/com.mojang/minecraftWorlds, and select it.</string>
+
+
     <string name="desc_status_phone">Stored locally</string>
     <string name="desc_status_cloud">Stored on the cloud</string>
-
+    <string name="desc_sign_in">Sign-in</string>
+    <string name="desc_saf">File access</string>
+    <string name="desc_grant">Grant</string>
     <string name="desc_upload">Upload to cloud</string>
     <string name="desc_download">Download to device</string>
     <string name="desc_delete_device">Delete from device</string>
