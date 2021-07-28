@@ -205,6 +205,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        if (needAccessDialog.isShowing)
+            needAccessDialog.dismiss()
         viewModel.checker?.destroy()
     }
 }
