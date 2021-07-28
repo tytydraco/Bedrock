@@ -67,14 +67,29 @@ class WorldsRecyclerAdapter(
             WorldFileType.LOCAL -> {
                 holder.binding.statusPhone.setColorFilter(accentColor)
                 holder.binding.statusCloud.setColorFilter(defaultColor)
+
+                holder.binding.deleteDevice.isEnabled = true
+                holder.binding.deleteCloud.isEnabled = false
+                holder.binding.download.isEnabled = false
+                holder.binding.upload.isEnabled = true
             }
             WorldFileType.REMOTE -> {
                 holder.binding.statusPhone.setColorFilter(defaultColor)
                 holder.binding.statusCloud.setColorFilter(accentColor)
+
+                holder.binding.deleteDevice.isEnabled = false
+                holder.binding.deleteCloud.isEnabled = true
+                holder.binding.download.isEnabled = true
+                holder.binding.upload.isEnabled = false
             }
             WorldFileType.LOCAL_REMOTE -> {
                 holder.binding.statusPhone.setColorFilter(accentColor)
                 holder.binding.statusCloud.setColorFilter(accentColor)
+
+                holder.binding.deleteDevice.isEnabled = true
+                holder.binding.deleteCloud.isEnabled = true
+                holder.binding.download.isEnabled = true
+                holder.binding.upload.isEnabled = true
             }
         }
 
