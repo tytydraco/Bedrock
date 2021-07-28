@@ -83,6 +83,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * @param completedListener A runnable that is passed a bundle with setup steps
      */
     fun getSetupActivityBundle(completedListener: (Bundle) -> Unit) {
+        /* The setup is already completed; don't return anything */
+        if (rootDocumentFile != null && googleDrive != null)
+            return
+
         val bundle = Bundle()
 
         /* We need file access */
