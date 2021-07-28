@@ -10,5 +10,5 @@
     <dimen name="no_worlds_image_size">150dp</dimen>
     <dimen name="divider_height">1dp</dimen>
     <dimen name="divider_horizontal_margin">12dp</dimen>
-    <dimen name="divider_vertical_margin">4dp</dimen>
+    <dimen name="divider_vertical_margin">8dp</dimen>
 </resources>
