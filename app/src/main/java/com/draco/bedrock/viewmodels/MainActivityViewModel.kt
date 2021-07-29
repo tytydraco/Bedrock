@@ -6,7 +6,6 @@ import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import android.os.PowerManager
-import android.util.Log
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
@@ -125,18 +124,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 sharedPreferences,
                 context.getString(R.string.pref_key_verified)
             )
-
-            callback {
-                onError {
-                    Log.d("PiracyChecker", "Error: ${it.name}")
-                }
-                doNotAllow { piracyCheckerError, _ ->
-                    Log.d("PiracyChecker", "Disallowed: ${piracyCheckerError.name}")
-                }
-                allow {
-                    Log.d("PiracyChecker", "Allowed")
-                }
-            }
         }
 
         val verified = sharedPreferences.getBoolean(context.getString(R.string.pref_key_verified), false)

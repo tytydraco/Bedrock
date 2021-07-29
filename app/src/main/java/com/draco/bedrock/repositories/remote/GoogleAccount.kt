@@ -46,7 +46,8 @@ class GoogleAccount(private val context: Context) {
      * @param activityResult Result to parse given by the calling ComponentActivity
      */
     fun handleExplicitSignIn(activityResult: ActivityResult) {
-        val result = Auth.GoogleSignInApi.getSignInResultFromIntent(activityResult.data)
+        val data = activityResult.data!!
+        val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data)
 
         if (result?.isSuccess == true && result.signInAccount != null) {
             account = result.signInAccount
