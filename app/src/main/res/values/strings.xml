@@ -69,7 +69,7 @@
     <string name="no_worlds">No worlds found :(</string>
     <string name="button_help">Help</string>
 
-    <string name="working_uploading">Uploading world to device</string>
+    <string name="working_uploading">Uploading world to cloud</string>
     <string name="working_downloading">Downloading world to device</string>
     <string name="working_delete_device">Deleting world from device</string>
     <string name="working_delete_cloud">Deleting world from cloud</string>
