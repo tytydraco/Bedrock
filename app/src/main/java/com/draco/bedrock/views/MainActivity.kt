@@ -58,33 +58,25 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.upload_all -> {
                 viewModel.createConfirmDialog(this, R.string.confirm_dialog_upload_all_message) {
-                    viewModel.safeCatch(binding.worldList) {
-                        viewModel.uploadAll()
-                    }
+                    viewModel.uploadAll(binding.worldList)
                 }
                 true
             }
             R.id.download_all -> {
                 viewModel.createConfirmDialog(this, R.string.confirm_dialog_download_all_message) {
-                    viewModel.safeCatch(binding.worldList) {
-                        viewModel.downloadAll()
-                    }
+                    viewModel.downloadAll(binding.worldList)
                 }
                 true
             }
             R.id.delete_device_all -> {
                 viewModel.createConfirmDialog(this, R.string.confirm_dialog_delete_device_all_message) {
-                    viewModel.safeCatch(binding.worldList) {
-                        viewModel.deleteAllDevice()
-                    }
+                    viewModel.deleteAllDevice(binding.worldList)
                 }
                 true
             }
             R.id.delete_cloud_all -> {
                 viewModel.createConfirmDialog(this, R.string.confirm_dialog_delete_cloud_all_message) {
-                    viewModel.safeCatch(binding.worldList) {
-                        viewModel.deleteAllCloud()
-                    }
+                    viewModel.deleteAllCloud(binding.worldList)
                 }
                 true
             }

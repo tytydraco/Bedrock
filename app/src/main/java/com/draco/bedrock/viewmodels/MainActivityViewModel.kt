@@ -261,7 +261,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * @param view A view to display the Snackbar on
      * @param runnable The problematic runnable to safely run
      */
-    fun safeCatch(view: View, runnable: () -> Unit) {
+    private fun safeCatch(view: View, runnable: () -> Unit) {
         try {
             runnable()
         } catch (e: Exception) {
@@ -358,55 +358,66 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Upload all Minecraft worlds
+     * @param view A view to display the Snackbar on
      */
-    fun uploadAll() {
+    fun uploadAll(view: View) {
         viewModelScope.launch(Dispatchers.IO) {
-            _worldList.value?.forEach {
-                uploadWorldToDrive(it.id)
+            safeCatch(view) {
+                _worldList.value?.forEach {
+                    uploadWorldToDrive(it.id)
+                }
+                updateWorldsList()
             }
-
-            updateWorldsList()
         }
     }
 
     /**
      * Download all Minecraft worlds
+     * @param view A view to display the Snackbar on
      */
-    fun downloadAll() {
+    fun downloadAll(view: View) {
         viewModelScope.launch(Dispatchers.IO) {
-            _worldList.value?.forEach {
-                downloadWorldFromDrive(it.id)
-            }
+            safeCatch(view) {
+                _worldList.value?.forEach {
+                    downloadWorldFromDrive(it.id)
+                }
 
-            updateWorldsList()
+                updateWorldsList()
+            }
         }
     }
 
     /**
      * Delete all local Minecraft worlds
+     * @param view A view to display the Snackbar on
      */
-    fun deleteAllDevice() {
+    fun deleteAllDevice(view: View) {
         viewModelScope.launch(Dispatchers.IO) {
-            rootDocumentFile?.listFiles()?.forEach {
-                it?.name?.let { name ->
-                    deleteWorldFromDevice(name)
+            safeCatch(view) {
+                rootDocumentFile?.listFiles()?.forEach {
+                    it?.name?.let { name ->
+                        deleteWorldFromDevice(name)
+                    }
                 }
-            }
 
-            updateWorldsList()
+                updateWorldsList()
+            }
         }
     }
 
     /**
      * Delete all remote Minecraft worlds
+     * @param view A view to display the Snackbar on
      */
-    fun deleteAllCloud() {
+    fun deleteAllCloud(view: View) {
         viewModelScope.launch(Dispatchers.IO) {
-            _worldList.value?.forEach {
-                deleteWorldFromDrive(it.id)
-            }
+            safeCatch(view) {
+                _worldList.value?.forEach {
+                    deleteWorldFromDrive(it.id)
+                }
 
-            updateWorldsList()
+                updateWorldsList()
+            }
         }
     }
 
