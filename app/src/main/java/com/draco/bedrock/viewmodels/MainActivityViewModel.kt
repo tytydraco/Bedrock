@@ -25,6 +25,7 @@ import com.draco.bedrock.repositories.constants.SetupSteps
 import com.draco.bedrock.repositories.constants.WorldFileTypes
 import com.draco.bedrock.repositories.remote.GoogleAccount
 import com.draco.bedrock.repositories.remote.GoogleDrive
+import com.draco.bedrock.utils.DocumentFileUnZip
 import com.draco.bedrock.utils.DocumentFileZip
 import com.draco.bedrock.utils.MinecraftWorldUtils
 import com.github.javiersantos.piracychecker.*
@@ -460,18 +461,19 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     fun uploadWorldToDrive(worldId: String) {
         _working.postValue(R.string.working_zipping)
 
-        rootDocumentFile?.listFiles()?.find { it.name == worldId }?.let {
+        rootDocumentFile?.listFiles()?.find { it.name == worldId }?.let { documentFile ->
             val driveFile = DriveFile(
                 name = worldId,
-                description = minecraftWorldUtils.getLevelName(it)
+                description = minecraftWorldUtils.getLevelName(documentFile)
             )
 
-            val zipFile = DocumentFileZip(contentResolver, it).zip()
+            DocumentFileZip(contentResolver).use {
+                it.addDirectoryContentsToZip(documentFile)
 
-            _working.postValue(R.string.working_uploading)
-            googleDrive?.createFileIfNecessary(driveFile)
-            googleDrive?.writeFileRaw(driveFile, zipFile)
-            zipFile.delete()
+                _working.postValue(R.string.working_uploading)
+                googleDrive?.createFileIfNecessary(driveFile)
+                googleDrive?.writeFileRaw(driveFile, it.tempFile)
+            }
         }
 
         _working.postValue(null)
@@ -491,7 +493,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 rootDocumentFile?.listFiles()?.find { it.name == worldId }?.delete()
                 rootDocumentFile?.createDirectory(worldId)?.let { subFolder ->
                     _working.postValue(R.string.working_unzipping)
-                    DocumentFileZip(contentResolver, subFolder).unZip(it)
+
+                    DocumentFileUnZip(contentResolver, subFolder, it).use {
+                        it.extractZipEntryToDocumentFile()
+                    }
                 }
             }
         }
