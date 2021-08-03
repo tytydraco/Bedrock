@@ -36,7 +36,9 @@ class DocumentFileZip(
     }
 
     private inner class Zip {
-        val tempFile: File = File.createTempFile("temp", "zip")
+        val tempFile: File = File.createTempFile("temp", "zip").also {
+            it.deleteOnExit()
+        }
         val byteArrayOutputStream = tempFile.outputStream()
         val zipOutputStream = ZipOutputStream(byteArrayOutputStream)
 
