@@ -39,11 +39,10 @@ class MinecraftWorldUtils(private val context: Context) {
      * Upload all Minecraft worlds
      * @param worldList List of WorldFiles
      * @param rootDocumentFile Minecraft Worlds DocumentFile
-     * @param googleDrive Google Drive instance
      */
-    fun uploadAll(worldList: List<WorldFile>, rootDocumentFile: DocumentFile, googleDrive: GoogleDrive) {
+    fun uploadAll(worldList: List<WorldFile>, rootDocumentFile: DocumentFile) {
         worldList.forEach {
-            uploadWorldToDrive(rootDocumentFile, it.id, googleDrive)
+            uploadWorldToDrive(rootDocumentFile, it.id)
         }
     }
 
@@ -51,11 +50,10 @@ class MinecraftWorldUtils(private val context: Context) {
      * Download all Minecraft worlds
      * @param worldList List of WorldFiles
      * @param rootDocumentFile Minecraft Worlds DocumentFile
-     * @param googleDrive Google Drive instance
      */
-    fun downloadAll(worldList: List<WorldFile>, rootDocumentFile: DocumentFile, googleDrive: GoogleDrive) {
+    fun downloadAll(worldList: List<WorldFile>, rootDocumentFile: DocumentFile) {
         worldList.forEach {
-            downloadWorldFromDrive(rootDocumentFile, it.id, googleDrive)
+            downloadWorldFromDrive(rootDocumentFile, it.id)
         }
     }
 
@@ -72,11 +70,10 @@ class MinecraftWorldUtils(private val context: Context) {
     /**
      * Delete all remote Minecraft worlds
      * @param worldList List of WorldFiles
-     * @param googleDrive Google Drive instance
      */
-    fun deleteAllCloud(worldList: List<WorldFile>, googleDrive: GoogleDrive) {
+    fun deleteAllCloud(worldList: List<WorldFile>) {
         worldList.forEach {
-            deleteWorldFromDrive(it.id, googleDrive)
+            deleteWorldFromDrive(it.id)
         }
     }
 
@@ -92,20 +89,18 @@ class MinecraftWorldUtils(private val context: Context) {
     /**
      * Delete a remote Minecraft world
      * @param worldId Folder ID to use to find what to delete
-     * @param googleDrive Google Drive instance
      */
-    fun deleteWorldFromDrive(worldId: String, googleDrive: GoogleDrive) {
+    fun deleteWorldFromDrive(worldId: String) {
         val driveFile = DriveFile(name = worldId)
-        googleDrive.deleteFile(driveFile)
+        GoogleDrive.deleteFile(driveFile)
     }
 
     /**
      * Upload a Minecraft world to the cloud
      * @param rootDocumentFile Minecraft Worlds DocumentFile
      * @param worldId Folder ID to use to find what to delete
-     * @param googleDrive Google Drive instance
      */
-    fun uploadWorldToDrive(rootDocumentFile: DocumentFile, worldId: String, googleDrive: GoogleDrive) {
+    fun uploadWorldToDrive(rootDocumentFile: DocumentFile, worldId: String) {
         rootDocumentFile.listFiles().find { it.name == worldId }?.let { documentFile ->
             val driveFile = DriveFile(
                 name = worldId,
@@ -115,8 +110,8 @@ class MinecraftWorldUtils(private val context: Context) {
             DocumentFileZip(contentResolver).use {
                 it.addDirectoryContentsToZip(documentFile)
 
-                googleDrive.createFileIfNecessary(driveFile)
-                googleDrive.writeFileRaw(driveFile, it.tempFile)
+                GoogleDrive.createFileIfNecessary(driveFile)
+                GoogleDrive.writeFileRaw(driveFile, it.tempFile)
             }
         }
     }
@@ -125,12 +120,11 @@ class MinecraftWorldUtils(private val context: Context) {
      * Download and extract a Minecraft world from the cloud
      * @param rootDocumentFile Minecraft Worlds DocumentFile
      * @param worldId Folder ID to use to find what to delete
-     * @param googleDrive Google Drive instance
      */
-    fun downloadWorldFromDrive(rootDocumentFile: DocumentFile, worldId: String, googleDrive: GoogleDrive) {
+    fun downloadWorldFromDrive(rootDocumentFile: DocumentFile, worldId: String) {
         val driveFile = DriveFile(name = worldId)
-        if (googleDrive.fileExists(driveFile)) {
-            googleDrive.readFileInputStream(driveFile).let {
+        if (GoogleDrive.fileExists(driveFile)) {
+            GoogleDrive.readFileInputStream(driveFile).let {
                 /* Recreate any existing world folders */
                 deleteWorldFromDevice(rootDocumentFile, worldId)
                 rootDocumentFile.createDirectory(worldId)?.let { subFolder ->

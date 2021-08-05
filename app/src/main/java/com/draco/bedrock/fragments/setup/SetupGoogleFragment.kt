@@ -19,7 +19,6 @@ class SetupGoogleFragment : SetupFragment() {
     private lateinit var binding: ActivitySetupGoogleBinding
 
     private lateinit var googleAccount: GoogleAccount
-    private var googleDrive: GoogleDrive? = null
 
     private val explicitLoginHandler = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         googleAccount.handleExplicitSignIn(it)
@@ -34,9 +33,9 @@ class SetupGoogleFragment : SetupFragment() {
         googleAccount.registerLoginHandler {
             if (it != null) {
                 initGoogleDrive()
-                googleDrive?.requestPermissionsIfNecessary(activity)
+                GoogleDrive.requestPermissionsIfNecessary(activity, it)
 
-                if (googleDrive?.hasPermissions() == true)
+                if (GoogleDrive.hasPermissions(it))
                     activity.finish()
             } else
                 error?.invoke()
@@ -58,7 +57,7 @@ class SetupGoogleFragment : SetupFragment() {
      */
     private fun initGoogleDrive() {
         googleAccount.account?.let {
-            googleDrive = GoogleDrive(requireContext(), it)
+            GoogleDrive.authenticate(requireContext(), it)
         }
     }
 

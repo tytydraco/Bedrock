@@ -22,50 +22,54 @@ import java.io.InputStream
 
 
 /**
- * A helper class for Google's horribly grotesque Google Drive code
- *
- * @param account A signed-in Google Account
- * @see GoogleAccount
+ * A helper singleton for Google's horribly grotesque Google Drive code
  */
-class GoogleDrive(
-    context: Context,
-    private val account: GoogleSignInAccount
-) {
-    companion object {
-        /**
-         * Request code to be used when requesting Google Drive permissions
-         */
-        const val REQUEST_CODE_CHECK_PERMISSIONS = 102
-        const val LIST_FILES_FIELDS = "files/id,files/kind,files/mimeType,files/name,files/description"
+object GoogleDrive {
+    /**
+     * Request code to be used when requesting Google Drive permissions
+     */
+    const val REQUEST_CODE_CHECK_PERMISSIONS = 102
+    const val LIST_FILES_FIELDS = "files/id,files/kind,files/mimeType,files/name,files/description"
 
-        /**
-         * Google permission scopes that we need to grant
-         */
-        object PermissionScopes {
-            val driveAppData = Scope(DriveScopes.DRIVE_APPDATA)
-            val email = Scope(Scopes.EMAIL)
-        }
+    /**
+     * Google permission scopes that we need to grant
+     */
+    object PermissionScopes {
+        val driveAppData = Scope(DriveScopes.DRIVE_APPDATA)
+        val email = Scope(Scopes.EMAIL)
     }
 
     /**
-     * OAuth2 credential for the application data context
+     * Single drive instance
      */
-    private val credential = GoogleAccountCredential.usingOAuth2(
-        context,
-        listOf(DriveScopes.DRIVE_APPDATA)
-    )
-        .setSelectedAccount(account.account)
+    private lateinit var drive: Drive
 
     /**
-     * Google drive instance for our application data context
+     * Authenticate the Google Drive instance
+     *
+     * @param account Google account to use
      */
-    private val drive = Drive.Builder(
-        AndroidHttp.newCompatibleTransport(),
-        GsonFactory(),
-        credential
-    )
-        .setApplicationName(context.packageName)
-        .build()
+    fun authenticate(context: Context, account: GoogleSignInAccount) {
+        val credential = GoogleAccountCredential.usingOAuth2(
+            context,
+            listOf(DriveScopes.DRIVE_APPDATA)
+        )
+            .setSelectedAccount(account.account)
+
+        drive = Drive.Builder(
+            AndroidHttp.newCompatibleTransport(),
+            GsonFactory(),
+            credential
+        )
+            .setApplicationName(context.packageName)
+            .build()
+    }
+
+    /**
+     * Check if the class instance is authenticated
+     * @return True if authenticated, false otherwise
+     */
+    fun isAuthenticated() = ::drive.isInitialized
 
     /**
      * Generate one valid Google Drive file id
@@ -83,9 +87,10 @@ class GoogleDrive(
     /**
      * Check if the user has Google Drive application folder permissions
      *
+     * @param account Google account to use
      * @return True if we have the requested Google Drive permissions
      */
-    fun hasPermissions() = GoogleSignIn.hasPermissions(
+    fun hasPermissions(account: GoogleSignInAccount) = GoogleSignIn.hasPermissions(
         account,
         PermissionScopes.driveAppData,
         PermissionScopes.email
@@ -94,10 +99,11 @@ class GoogleDrive(
     /**
      * Request permissions from the user using a request code
      *
+     * @param account Google account to use
      * @param activity Activity to forward request code to
      * @see REQUEST_CODE_CHECK_PERMISSIONS
      */
-    fun requestPermissions(activity: Activity) {
+    fun requestPermissions(activity: Activity, account: GoogleSignInAccount) {
         GoogleSignIn.requestPermissions(
             activity,
             REQUEST_CODE_CHECK_PERMISSIONS,
@@ -113,9 +119,9 @@ class GoogleDrive(
      * @param activity Activity to forward request code to
      * @see requestPermissions
      */
-    fun requestPermissionsIfNecessary(activity: Activity) {
-        if (!hasPermissions())
-            requestPermissions(activity)
+    fun requestPermissionsIfNecessary(activity: Activity, account: GoogleSignInAccount) {
+        if (!hasPermissions(account))
+            requestPermissions(activity, account)
     }
 
     /**

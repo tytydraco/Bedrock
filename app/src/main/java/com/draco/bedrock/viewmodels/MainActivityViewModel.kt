@@ -38,7 +38,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     val googleAccount = GoogleAccount(application.applicationContext)
-    var googleDrive: GoogleDrive? = null
     private var worldsRecyclerAdapter: WorldsRecyclerAdapter? = null
 
     private val powerManager = application.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -77,20 +76,23 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * @param completedListener A runnable that is passed a bundle with setup steps
      */
     fun getSetupActivityBundle(completedListener: (Bundle) -> Unit) {
+        val rootDocumentSet = (rootDocumentFile != null)
+        val googleDriveAuthenticated = GoogleDrive.isAuthenticated()
+
         /* The setup is already completed; don't return anything */
-        if (rootDocumentFile != null && googleDrive != null)
+        if (rootDocumentSet && googleDriveAuthenticated)
             return
 
         val bundle = Bundle()
 
         /* We need file access */
-        if (rootDocumentFile == null) {
+        if (!rootDocumentSet) {
             if (!getPersistableUri())
                 bundle.putBoolean(SetupSteps.SAF, true)
         }
 
         /* We need Google Drive access; delay completed listener until we can be sure */
-        if (googleDrive == null) {
+        if (!googleDriveAuthenticated) {
             setupGoogle(
                 {
                     completedListener.invoke(bundle)
@@ -139,7 +141,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             if (it != null) {
                 initGoogleDrive()
 
-                if (googleDrive?.hasPermissions() == true)
+                if (GoogleDrive.hasPermissions(it))
                     success?.invoke()
                 else
                     error?.invoke()
@@ -191,7 +193,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             /* Get both local and remote worlds */
             val localFiles = rootDocumentFile?.listFiles()
             val driveFiles = try {
-                googleDrive?.getFiles()
+                GoogleDrive.getFiles()
             } catch (e: Exception) {
                 null
             }
@@ -335,13 +337,15 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     /**
-     * Initialize the Google Drive instance
+     * Initialize the Google Drive instance and authenticate it
      */
     fun initGoogleDrive() {
         val context = getApplication<Application>().applicationContext
 
-        googleAccount.account?.let {
-            googleDrive = GoogleDrive(context, it)
+        if (!GoogleDrive.isAuthenticated()) {
+            googleAccount.account?.let {
+                GoogleDrive.authenticate(context, it)
+            }
         }
     }
 
@@ -374,12 +378,11 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     fun uploadAll(view: View) {
         val worldList = _worldList.value ?: return
         val rootDocumentFile = rootDocumentFile ?: return
-        val googleDrive = googleDrive ?: return
 
         viewModelScope.launch(Dispatchers.IO) {
             _working.postValue(R.string.working_uploading)
             safeCatch(view) {
-                minecraftWorldUtils.uploadAll(worldList, rootDocumentFile, googleDrive)
+                minecraftWorldUtils.uploadAll(worldList, rootDocumentFile)
             }
             _working.postValue(null)
             updateWorldsList()
@@ -393,12 +396,11 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     fun downloadAll(view: View) {
         val worldList = _worldList.value ?: return
         val rootDocumentFile = rootDocumentFile ?: return
-        val googleDrive = googleDrive ?: return
 
         viewModelScope.launch(Dispatchers.IO) {
             _working.postValue(R.string.working_downloading)
             safeCatch(view) {
-                minecraftWorldUtils.downloadAll(worldList, rootDocumentFile, googleDrive)
+                minecraftWorldUtils.downloadAll(worldList, rootDocumentFile)
             }
             _working.postValue(null)
             updateWorldsList()
@@ -425,12 +427,11 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      */
     fun deleteAllCloud(view: View) {
         val worldList = _worldList.value ?: return
-        val googleDrive = googleDrive ?: return
 
         viewModelScope.launch(Dispatchers.IO) {
             _working.postValue(R.string.working_delete_cloud)
             safeCatch(view) {
-                minecraftWorldUtils.deleteAllCloud(worldList, googleDrive)
+                minecraftWorldUtils.deleteAllCloud(worldList)
             }
             _working.postValue(null)
             updateWorldsList()
@@ -459,12 +460,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      * @param worldId Folder ID to use to find what to delete
      */
     fun deleteWorldFromDrive(view: View, worldId: String) {
-        val googleDrive = googleDrive ?: return
-
         viewModelScope.launch(Dispatchers.IO) {
             _working.postValue(R.string.working_delete_cloud)
             safeCatch(view) {
-                minecraftWorldUtils.deleteWorldFromDrive(worldId, googleDrive)
+                minecraftWorldUtils.deleteWorldFromDrive(worldId)
             }
             _working.postValue(null)
             updateWorldsList()
@@ -478,12 +477,11 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      */
     fun uploadWorldToDrive(view: View, worldId: String) {
         val rootDocumentFile = rootDocumentFile ?: return
-        val googleDrive = googleDrive ?: return
 
         viewModelScope.launch(Dispatchers.IO) {
             _working.postValue(R.string.working_uploading)
             safeCatch(view) {
-                minecraftWorldUtils.uploadWorldToDrive(rootDocumentFile, worldId, googleDrive)
+                minecraftWorldUtils.uploadWorldToDrive(rootDocumentFile, worldId)
             }
             _working.postValue(null)
             updateWorldsList()
@@ -497,12 +495,11 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
      */
     fun downloadWorldFromDrive(view: View, worldId: String) {
         val rootDocumentFile = rootDocumentFile ?: return
-        val googleDrive = googleDrive ?: return
 
         viewModelScope.launch(Dispatchers.IO) {
             _working.postValue(R.string.working_downloading)
             safeCatch(view) {
-                minecraftWorldUtils.downloadWorldFromDrive(rootDocumentFile, worldId, googleDrive)
+                minecraftWorldUtils.downloadWorldFromDrive(rootDocumentFile, worldId)
             }
             _working.postValue(null)
             updateWorldsList()
