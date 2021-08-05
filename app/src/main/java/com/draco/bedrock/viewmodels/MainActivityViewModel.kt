@@ -92,10 +92,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         val bundle = Bundle()
 
         /* We need file access */
-        if (!rootDocumentSet) {
-            if (!getPersistableUri())
-                bundle.putBoolean(SetupSteps.SAF, true)
-        }
+        if (!rootDocumentSet && !getPersistableUri())
+            bundle.putBoolean(SetupSteps.SAF, true)
 
         /* We need Google Drive access; delay completed listener until we can be sure */
         if (!googleDriveAuthenticated) {
