@@ -32,6 +32,7 @@ object GoogleDrive {
     object Spaces {
         const val APP_DATA_FOLDER = "appDataFolder"
         const val DRIVE = "drive"
+        const val PHOTOS = "photos"
     }
 
     /**
