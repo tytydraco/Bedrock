@@ -1,7 +1,6 @@
 package com.draco.bedrock.repositories.remote
 
 import android.content.Context
-import com.draco.bedrock.models.DriveFile
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
@@ -74,7 +73,7 @@ object GoogleDrive {
      * @param space The Google Drive space to use
      * @return A valid Google Drive file id string
      */
-    private fun generateId(space: String) = drive
+    fun generateId(space: String) = drive
         .files()
         .generateIds()
         .setSpace(space)
@@ -85,50 +84,44 @@ object GoogleDrive {
     /**
      * Create a file in the Google Drive application data folder
      *
-     * @param driveFile Approximate file configuration
-     * @return Newly created file id (generated if not given) or null if invalid
+     * @param fileModel Approximate file configuration
+     * @return Newly created file id (generated if not given)
      */
-    fun create(driveFile: DriveFile): String? {
-        val space = driveFile.space ?: return null
-        val parents = driveFile.parents ?: return null
-
-        /* Generate a file id */
-        val fileId = driveFile.id ?: generateId(space)
-
+    fun create(fileModel: File): String {
         val file = File()
-            .setName(driveFile.name)
-            .setDescription(driveFile.description)
-            .setId(fileId)
-            .setMimeType(driveFile.mimeType)
-            .setParents(parents)
+            .setName(fileModel.name)
+            .setDescription(fileModel.description)
+            .setId(fileModel.id)
+            .setMimeType(fileModel.mimeType)
+            .setParents(fileModel.parents)
 
-        drive
+        val newFile = drive
             .files()
             .create(file)
             .execute()
 
-        return fileId
+        return newFile.id
     }
 
     /**
      * Create a file in the Google Drive application data folder if it does not yet exist
      *
-     * @param driveFile Approximate file configuration
+     * @param fileModel Approximate file configuration
      * @return Newly created file id, or existing one if it exists already
      */
-    fun createIfNecessary(driveFile: DriveFile): String? {
-        if (!exists(driveFile))
-            return create(driveFile)
-        return driveFile.id
+    fun createIfNecessary(fileModel: File): String? {
+        if (!exists(fileModel))
+            return create(fileModel)
+        return fileModel.id
     }
 
     /**
      * Delete a Google Drive file
      *
-     * @param driveFile Approximate file configuration
+     * @param fileModel Approximate file configuration
      */
-    fun delete(driveFile: DriveFile) {
-        val file = find(driveFile) ?: return
+    fun delete(fileModel: File) {
+        val file = find(fileModel) ?: return
 
         drive
             .files()
@@ -140,38 +133,35 @@ object GoogleDrive {
      * Determine if a Drive File matches a given configuration
      *
      * @param file The Google Drive file
-     * @param driveFile Approximate file configuration
+     * @param fileModel Approximate file configuration
      * @return True if the file id, name, or description match
      */
-    private fun matchesDriveFile(file: File, driveFile: DriveFile) =
+    fun fileMetadataMatches(file: File, fileModel: File) =
         when {
-            driveFile.id != null -> file.id == driveFile.id
-            driveFile.name != null -> file.name == driveFile.name
-            driveFile.description != null -> file.description == driveFile.description
+            fileModel.id != null -> file.id == fileModel.id
+            fileModel.name != null -> file.name == fileModel.name
+            fileModel.description != null -> file.description == fileModel.description
             else -> false
         }
 
     /**
      * Check if a file exists in the application data folder
      *
-     * @param driveFile Approximate file configuration
+     * @param fileModel Approximate file configuration
      * @return The first file matching the configuration, or null if nothing is found
      */
-    fun find(driveFile: DriveFile) = driveFile.space?.let {
-        files(it)
-            .find { file ->
-                matchesDriveFile(file, driveFile)
-            }
+    fun find(fileModel: File) = files(fileModel.spaces).find { file ->
+        fileMetadataMatches(file, fileModel)
     }
 
     /**
      * Check if a file exists in the application data folder, matching by either
      * file id or file name.
      *
-     * @param driveFile Approximate file configuration
+     * @param fileModel Approximate file configuration
      * @return True if the file exists, or false if nothing is found
      */
-    fun exists(driveFile: DriveFile) = find(driveFile) != null
+    fun exists(fileModel: File) = find(fileModel) != null
 
     /**
      * Get all Google Drive files in the specified space
@@ -179,7 +169,7 @@ object GoogleDrive {
      * @param space The Google Drive space to use
      * @return A list of files in the Google Drive application data folder.
      */
-    fun files(space: String): List<File> {
+    fun files(spaces: List<String>): List<File> {
         val files = mutableListOf<File>()
 
         /* Loop until we no longer have a next page token */
@@ -188,7 +178,7 @@ object GoogleDrive {
             val request = drive
                 .files()
                 .list()
-                .setSpaces(space)
+                .setSpaces(spaces.joinToString(","))
                 .setFields(LIST_FILES_FIELDS)
                 .execute().also {
                     nextPageToken?.let { token -> it.nextPageToken = token }
@@ -208,8 +198,8 @@ object GoogleDrive {
      *
      * @throws FileNotFoundException Desired file does not exist or cannot be found.
      */
-    class Write(driveFile: DriveFile) {
-        val file = find(driveFile) ?: throw FileNotFoundException()
+    class Write(fileModel: File) {
+        val file = find(fileModel) ?: throw FileNotFoundException()
 
         /**
          * Update an existing file's contents
@@ -254,8 +244,8 @@ object GoogleDrive {
      *
      * @throws FileNotFoundException Desired file does not exist or cannot be found.
      */
-    class Read(driveFile: DriveFile) {
-        val file = find(driveFile) ?: throw FileNotFoundException()
+    class Read(fileModel: File) {
+        val file = find(fileModel) ?: throw FileNotFoundException()
         private val get = drive
             .files()
             .get(file.id)

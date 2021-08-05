@@ -3,11 +3,11 @@ package com.draco.bedrock.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
-import com.draco.bedrock.models.DriveFile
 import com.draco.bedrock.models.WorldFile
 import com.draco.bedrock.repositories.constants.Minecraft
 import com.draco.bedrock.repositories.constants.WorldFileTypes
 import com.draco.bedrock.repositories.remote.GoogleDrive
+import com.google.api.services.drive.model.File
 
 class MinecraftWorldUtils(private val context: Context) {
     private val contentResolver = context.contentResolver
@@ -93,12 +93,11 @@ class MinecraftWorldUtils(private val context: Context) {
      * @param worldId Folder ID to use to find what to delete
      */
     fun deleteWorldFromDrive(worldId: String) {
-        val driveFile = DriveFile(
-            name = worldId,
-            space = GoogleDrive.Spaces.APP_DATA_FOLDER,
-            parents = listOf(GoogleDrive.Spaces.APP_DATA_FOLDER)
-        )
-        GoogleDrive.delete(driveFile)
+        val fileModel = File()
+            .setName(worldId)
+            .setSpaces(listOf(GoogleDrive.Spaces.APP_DATA_FOLDER))
+            .setParents(listOf(GoogleDrive.Spaces.APP_DATA_FOLDER))
+        GoogleDrive.delete(fileModel)
     }
 
     /**
@@ -108,18 +107,25 @@ class MinecraftWorldUtils(private val context: Context) {
      */
     fun uploadWorldToDrive(rootDocumentFile: DocumentFile, worldId: String) {
         rootDocumentFile.listFiles().find { it.name == worldId }?.let { documentFile ->
-            val driveFile = DriveFile(
-                name = worldId,
-                description = getLevelName(documentFile),
-                space = GoogleDrive.Spaces.APP_DATA_FOLDER,
-                parents = listOf(GoogleDrive.Spaces.APP_DATA_FOLDER)
-            )
+            val fileModel = File()
+                .setName(worldId)
+                .setDescription(getLevelName(documentFile))
+                .setSpaces(listOf(GoogleDrive.Spaces.APP_DATA_FOLDER))
+                .setParents(listOf(GoogleDrive.Spaces.APP_DATA_FOLDER))
+
+            /* Delete world if it exists on the cloud already */
+            GoogleDrive.find(fileModel)?.let {
+                GoogleDrive.delete(fileModel)
+            }
+
+            if (fileModel.id == null)
+                fileModel.id = GoogleDrive.generateId(GoogleDrive.Spaces.APP_DATA_FOLDER)
 
             DocumentFileZip(contentResolver).use {
                 it.addDirectoryContentsToZip(documentFile)
 
-                GoogleDrive.createIfNecessary(driveFile)
-                GoogleDrive.Write(driveFile).file(it.tempFile)
+                GoogleDrive.createIfNecessary(fileModel)
+                GoogleDrive.Write(fileModel).file(it.tempFile)
             }
         }
     }
@@ -130,13 +136,13 @@ class MinecraftWorldUtils(private val context: Context) {
      * @param worldId Folder ID to use to find what to delete
      */
     fun downloadWorldFromDrive(rootDocumentFile: DocumentFile, worldId: String) {
-        val driveFile = DriveFile(
-            name = worldId,
-            space = GoogleDrive.Spaces.APP_DATA_FOLDER,
-            parents = listOf(GoogleDrive.Spaces.APP_DATA_FOLDER)
-        )
-        if (GoogleDrive.exists(driveFile)) {
-            GoogleDrive.Read(driveFile).inputStream().let {
+        val fileModel = File()
+            .setName(worldId)
+            .setSpaces(listOf(GoogleDrive.Spaces.APP_DATA_FOLDER))
+            .setParents(listOf(GoogleDrive.Spaces.APP_DATA_FOLDER))
+
+        if (GoogleDrive.exists(fileModel)) {
+            GoogleDrive.Read(fileModel).inputStream().let {
                 /* Recreate any existing world folders */
                 deleteWorldFromDevice(rootDocumentFile, worldId)
                 rootDocumentFile.createDirectory(worldId)?.let { subFolder ->
@@ -158,7 +164,7 @@ class MinecraftWorldUtils(private val context: Context) {
         /* Get both local and remote worlds */
         val localFiles = rootDocumentFile?.listFiles()
         val driveFiles = try {
-            GoogleDrive.files(GoogleDrive.Spaces.APP_DATA_FOLDER)
+            GoogleDrive.files(listOf(GoogleDrive.Spaces.APP_DATA_FOLDER))
         } catch (e: Exception) {
             null
         }
