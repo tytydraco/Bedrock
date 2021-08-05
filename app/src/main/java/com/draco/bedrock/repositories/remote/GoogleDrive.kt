@@ -75,12 +75,13 @@ object GoogleDrive {
     /**
      * Create a file in the Google Drive application data folder
      *
-     * @param fileModel Approximate file configuration
+     * @param name File name
+     * @param description File description
      */
-    fun create(fileModel: File) {
+    fun create(name: String, description: String? = null) {
         val file = File()
-            .setName(fileModel.name)
-            .setDescription(fileModel.description)
+            .setName(name)
+            .setDescription(description)
             .setParents(listOf(PARENT))
 
         drive
@@ -90,22 +91,12 @@ object GoogleDrive {
     }
 
     /**
-     * Create a file in the Google Drive application data folder if it does not yet exist
-     *
-     * @param fileModel Approximate file configuration
-     */
-    fun createIfNecessary(fileModel: File) {
-        if (!exists(fileModel))
-            create(fileModel)
-    }
-
-    /**
      * Delete a Google Drive file
      *
-     * @param fileModel Approximate file configuration
+     * @param name File name
      */
-    fun delete(fileModel: File) {
-        val file = find(fileModel) ?: return
+    fun delete(name: String) {
+        val file = find(name) ?: return
 
         drive
             .files()
@@ -114,38 +105,21 @@ object GoogleDrive {
     }
 
     /**
-     * Determine if a Drive File matches a given configuration
-     *
-     * @param file The Google Drive file
-     * @param fileModel Approximate file configuration
-     * @return True if the file id, name, or description match
-     */
-    fun fileMetadataMatches(file: File, fileModel: File) =
-        when {
-            fileModel.id != null -> file.id == fileModel.id
-            fileModel.name != null -> file.name == fileModel.name
-            fileModel.description != null -> file.description == fileModel.description
-            else -> false
-        }
-
-    /**
      * Check if a file exists in the application data folder
      *
-     * @param fileModel Approximate file configuration
+     * @param name File name
      * @return The first file matching the configuration, or null if nothing is found
      */
-    fun find(fileModel: File) = files().find { file ->
-        fileMetadataMatches(file, fileModel)
-    }
+    fun find(name: String) = files().find { it.name == name }
 
     /**
      * Check if a file exists in the application data folder, matching by either
      * file id or file name.
      *
-     * @param fileModel Approximate file configuration
+     * @param name File name
      * @return True if the file exists, or false if nothing is found
      */
-    fun exists(fileModel: File) = find(fileModel) != null
+    fun exists(name: String) = find(name) != null
 
     /**
      * Get all Google Drive files in the specified space
@@ -180,10 +154,11 @@ object GoogleDrive {
     /**
      * Write content to a DriveFile
      *
+     * @param name File name
      * @throws FileNotFoundException Desired file does not exist or cannot be found.
      */
-    class Write(fileModel: File) {
-        val file = find(fileModel) ?: throw FileNotFoundException()
+    class Write(name: String) {
+        val file = find(name) ?: throw FileNotFoundException()
 
         /**
          * Update an existing file's contents
@@ -226,10 +201,11 @@ object GoogleDrive {
     /**
      * Read content from a DriveFile
      *
+     * @param name File name
      * @throws FileNotFoundException Desired file does not exist or cannot be found.
      */
-    class Read(fileModel: File) {
-        val file = find(fileModel) ?: throw FileNotFoundException()
+    class Read(name: String) {
+        val file = find(name) ?: throw FileNotFoundException()
         private val get = drive
             .files()
             .get(file.id)

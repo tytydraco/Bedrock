@@ -7,7 +7,6 @@ import com.draco.bedrock.models.WorldFile
 import com.draco.bedrock.repositories.constants.Minecraft
 import com.draco.bedrock.repositories.constants.WorldFileTypes
 import com.draco.bedrock.repositories.remote.GoogleDrive
-import com.google.api.services.drive.model.File
 
 class MinecraftWorldUtils(private val context: Context) {
     private val contentResolver = context.contentResolver
@@ -101,9 +100,7 @@ class MinecraftWorldUtils(private val context: Context) {
      * @param worldId Folder ID to use to find what to delete
      */
     fun deleteWorldFromDrive(worldId: String) {
-        val fileModel = File()
-            .setName(worldId)
-        GoogleDrive.delete(fileModel)
+        GoogleDrive.delete(worldId)
     }
 
     /**
@@ -114,21 +111,17 @@ class MinecraftWorldUtils(private val context: Context) {
      */
     fun uploadWorldToDrive(rootDocumentFile: DocumentFile, worldId: String) {
         rootDocumentFile.listFiles().find { it.name == worldId }?.let {
-            val fileModel = File()
-                .setName(worldId)
-                .setDescription(getLevelName(it))
-
             /* Delete world if it exists on the cloud already */
-            GoogleDrive.find(fileModel)?.let {
-                GoogleDrive.delete(fileModel)
+            GoogleDrive.find(worldId)?.let {
+                GoogleDrive.delete(worldId)
             }
 
             DocumentFileZip(contentResolver).use { documentFileZip ->
                 documentFileZip.addDirectoryContentsToZip(it)
 
-                if (!GoogleDrive.exists(fileModel))
-                    GoogleDrive.create(fileModel)
-                GoogleDrive.Write(fileModel).file(documentFileZip.tempFile)
+                if (!GoogleDrive.exists(worldId))
+                    GoogleDrive.create(worldId, getLevelName(it))
+                GoogleDrive.Write(worldId).file(documentFileZip.tempFile)
             }
         }
     }
@@ -140,11 +133,8 @@ class MinecraftWorldUtils(private val context: Context) {
      * @param worldId Folder ID to use to find what to delete
      */
     fun downloadWorldFromDrive(rootDocumentFile: DocumentFile, worldId: String) {
-        val fileModel = File()
-            .setName(worldId)
-
-        if (GoogleDrive.exists(fileModel)) {
-            GoogleDrive.Read(fileModel).inputStream().let {
+        if (GoogleDrive.exists(worldId)) {
+            GoogleDrive.Read(worldId).inputStream().let {
                 /* Recreate any existing world folders */
                 deleteWorldFromDevice(rootDocumentFile, worldId)
                 rootDocumentFile.createDirectory(worldId)?.let { subFolder ->
