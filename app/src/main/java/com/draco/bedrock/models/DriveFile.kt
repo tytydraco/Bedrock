@@ -10,5 +10,6 @@ data class DriveFile(
     var description: String? = null,
     var mimeType: String? = null,
     var id: String? = null,
-    var space: String? = null
+    var space: String? = null,
+    var parents: List<String>? = null
 )

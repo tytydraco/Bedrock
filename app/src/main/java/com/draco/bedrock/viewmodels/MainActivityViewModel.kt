@@ -26,11 +26,13 @@ import com.draco.bedrock.repositories.remote.GoogleDrive
 import com.draco.bedrock.utils.MinecraftWorldUtils
 import com.github.javiersantos.piracychecker.PiracyChecker
 import com.github.javiersantos.piracychecker.piracyChecker
+import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.Scopes
 import com.google.android.gms.common.api.Scope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.google.api.services.drive.DriveScopes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -223,6 +225,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     private fun safeCatch(view: View, runnable: () -> Unit) {
         try {
             runnable()
+        } catch (e: UserRecoverableAuthException) {
+            view.context.startActivity(e.intent)
+        } catch (e: UserRecoverableAuthIOException) {
+            view.context.startActivity(e.intent)
         } catch (e: Exception) {
             e.printStackTrace()
 

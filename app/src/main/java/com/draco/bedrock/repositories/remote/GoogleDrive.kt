@@ -90,6 +90,7 @@ object GoogleDrive {
      */
     fun create(driveFile: DriveFile): String? {
         val space = driveFile.space ?: return null
+        val parents = driveFile.parents ?: return null
 
         /* Generate a file id */
         val fileId = driveFile.id ?: generateId(space)
@@ -99,6 +100,7 @@ object GoogleDrive {
             .setDescription(driveFile.description)
             .setId(fileId)
             .setMimeType(driveFile.mimeType)
+            .setParents(parents)
 
         drive
             .files()

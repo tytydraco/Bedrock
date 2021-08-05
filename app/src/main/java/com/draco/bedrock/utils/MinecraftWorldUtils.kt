@@ -95,7 +95,8 @@ class MinecraftWorldUtils(private val context: Context) {
     fun deleteWorldFromDrive(worldId: String) {
         val driveFile = DriveFile(
             name = worldId,
-            space = GoogleDrive.Spaces.APP_DATA_FOLDER
+            space = GoogleDrive.Spaces.APP_DATA_FOLDER,
+            parents = listOf(GoogleDrive.Spaces.APP_DATA_FOLDER)
         )
         GoogleDrive.delete(driveFile)
     }
@@ -110,7 +111,8 @@ class MinecraftWorldUtils(private val context: Context) {
             val driveFile = DriveFile(
                 name = worldId,
                 description = getLevelName(documentFile),
-                space = GoogleDrive.Spaces.APP_DATA_FOLDER
+                space = GoogleDrive.Spaces.APP_DATA_FOLDER,
+                parents = listOf(GoogleDrive.Spaces.APP_DATA_FOLDER)
             )
 
             DocumentFileZip(contentResolver).use {
@@ -130,7 +132,8 @@ class MinecraftWorldUtils(private val context: Context) {
     fun downloadWorldFromDrive(rootDocumentFile: DocumentFile, worldId: String) {
         val driveFile = DriveFile(
             name = worldId,
-            space = GoogleDrive.Spaces.APP_DATA_FOLDER
+            space = GoogleDrive.Spaces.APP_DATA_FOLDER,
+            parents = listOf(GoogleDrive.Spaces.APP_DATA_FOLDER)
         )
         if (GoogleDrive.exists(driveFile)) {
             GoogleDrive.Read(driveFile).inputStream().let {
