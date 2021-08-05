@@ -26,8 +26,12 @@ import com.draco.bedrock.repositories.remote.GoogleAccount
 import com.draco.bedrock.repositories.remote.GoogleDrive
 import com.draco.bedrock.utils.MinecraftWorldUtils
 import com.github.javiersantos.piracychecker.*
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.common.Scopes
+import com.google.android.gms.common.api.Scope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.api.services.drive.DriveScopes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,7 +41,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         const val WAKELOCK_TAG = "Bedrock::Working"
     }
 
-    val googleAccount = GoogleAccount(application.applicationContext)
+    private val googleAccount = GoogleAccount(application.applicationContext)
     private var worldsRecyclerAdapter: WorldsRecyclerAdapter? = null
 
     private val powerManager = application.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -141,7 +145,13 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             if (it != null) {
                 initGoogleDrive()
 
-                if (GoogleDrive.hasPermissions(it))
+                val hasGoogleDrivePermissions = GoogleSignIn.hasPermissions(
+                    it,
+                    Scope(DriveScopes.DRIVE_APPDATA),
+                    Scope(Scopes.EMAIL)
+                )
+
+                if (hasGoogleDrivePermissions)
                     success?.invoke()
                 else
                     error?.invoke()
@@ -193,7 +203,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             /* Get both local and remote worlds */
             val localFiles = rootDocumentFile?.listFiles()
             val driveFiles = try {
-                GoogleDrive.getFiles()
+                GoogleDrive.files(GoogleDrive.Spaces.APP_DATA_FOLDER)
             } catch (e: Exception) {
                 null
             }

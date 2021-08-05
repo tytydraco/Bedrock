@@ -1,13 +1,8 @@
 package com.draco.bedrock.repositories.remote
 
-import android.app.Activity
 import android.content.Context
 import com.draco.bedrock.models.DriveFile
-import com.draco.bedrock.repositories.constants.GoogleDriveSpaces
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.common.Scopes
-import com.google.android.gms.common.api.Scope
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.AbstractInputStreamContent
@@ -21,21 +16,22 @@ import java.io.FileNotFoundException
 
 
 /**
- * A helper singleton for Google's horribly grotesque Google Drive code
+ * A helper singleton for Google's horribly grotesque Google Drive API
  */
 object GoogleDrive {
     /**
      * Request code to be used when requesting Google Drive permissions
      */
     const val REQUEST_CODE_CHECK_PERMISSIONS = 102
-    const val LIST_FILES_FIELDS = "files/id,files/kind,files/mimeType,files/name,files/description"
 
     /**
-     * Google permission scopes that we need to grant
+     * Fields to return when listing files
      */
-    object PermissionScopes {
-        val driveAppData = Scope(DriveScopes.DRIVE_APPDATA)
-        val email = Scope(Scopes.EMAIL)
+    const val LIST_FILES_FIELDS = "files/id,files/kind,files/mimeType,files/name,files/description"
+
+    object Spaces {
+        const val APP_DATA_FOLDER = "appDataFolder"
+        const val DRIVE = "drive"
     }
 
     /**
@@ -48,10 +44,10 @@ object GoogleDrive {
      *
      * @param account Google account to use
      */
-    fun authenticate(context: Context, account: GoogleSignInAccount) {
+    fun authenticate(context: Context, account: GoogleSignInAccount, scopes: List<String> = listOf(DriveScopes.DRIVE_APPDATA)) {
         val credential = GoogleAccountCredential.usingOAuth2(
             context,
-            listOf(DriveScopes.DRIVE_APPDATA)
+            scopes
         )
             .setSelectedAccount(account.account)
 
@@ -66,6 +62,7 @@ object GoogleDrive {
 
     /**
      * Check if the class instance is authenticated
+     *
      * @return True if authenticated, false otherwise
      */
     fun isAuthenticated() = ::drive.isInitialized
@@ -73,9 +70,10 @@ object GoogleDrive {
     /**
      * Generate one valid Google Drive file id
      *
+     * @param space The Google Drive space to use
      * @return A valid Google Drive file id string
      */
-    private fun generateId(space: String = GoogleDriveSpaces.APP_DATA_FOLDER) = drive
+    private fun generateId(space: String) = drive
         .files()
         .generateIds()
         .setSpace(space)
@@ -84,61 +82,22 @@ object GoogleDrive {
         .ids[0]
 
     /**
-     * Check if the user has Google Drive application folder permissions
-     *
-     * @param account Google account to use
-     * @return True if we have the requested Google Drive permissions
-     */
-    fun hasPermissions(account: GoogleSignInAccount) = GoogleSignIn.hasPermissions(
-        account,
-        PermissionScopes.driveAppData,
-        PermissionScopes.email
-    )
-
-    /**
-     * Request permissions from the user using a request code
-     *
-     * @param account Google account to use
-     * @param activity Activity to forward request code to
-     * @see REQUEST_CODE_CHECK_PERMISSIONS
-     */
-    fun requestPermissions(activity: Activity, account: GoogleSignInAccount) {
-        GoogleSignIn.requestPermissions(
-            activity,
-            REQUEST_CODE_CHECK_PERMISSIONS,
-            account,
-            PermissionScopes.driveAppData,
-            PermissionScopes.email
-        )
-    }
-
-    /**
-     * If the user does not have permissions already, prompt them for it.
-     *
-     * @param activity Activity to forward request code to
-     * @see requestPermissions
-     */
-    fun requestPermissionsIfNecessary(activity: Activity, account: GoogleSignInAccount) {
-        if (!hasPermissions(account))
-            requestPermissions(activity, account)
-    }
-
-    /**
      * Create a file in the Google Drive application data folder
      *
      * @param driveFile Approximate file configuration
-     * @return Newly created file id (generated if not given)
+     * @return Newly created file id (generated if not given) or null if invalid
      */
-    fun createFile(driveFile: DriveFile): String {
+    fun create(driveFile: DriveFile): String? {
+        val space = driveFile.space ?: return null
+
         /* Generate a file id */
-        val fileId = driveFile.id ?: generateId(driveFile.parent)
+        val fileId = driveFile.id ?: generateId(space)
 
         val file = File()
             .setName(driveFile.name)
             .setDescription(driveFile.description)
             .setId(fileId)
             .setMimeType(driveFile.mimeType)
-            .setParents(listOf(driveFile.parent))
 
         drive
             .files()
@@ -154,9 +113,9 @@ object GoogleDrive {
      * @param driveFile Approximate file configuration
      * @return Newly created file id, or existing one if it exists already
      */
-    fun createFileIfNecessary(driveFile: DriveFile): String? {
-        if (!fileExists(driveFile))
-            return createFile(driveFile)
+    fun createIfNecessary(driveFile: DriveFile): String? {
+        if (!exists(driveFile))
+            return create(driveFile)
         return driveFile.id
     }
 
@@ -165,8 +124,8 @@ object GoogleDrive {
      *
      * @param driveFile Approximate file configuration
      */
-    fun deleteFile(driveFile: DriveFile) {
-        val file = findFile(driveFile) ?: return
+    fun delete(driveFile: DriveFile) {
+        val file = find(driveFile) ?: return
 
         drive
             .files()
@@ -181,7 +140,7 @@ object GoogleDrive {
      * @param driveFile Approximate file configuration
      * @return True if the file id, name, or description match
      */
-    private fun fileMatchesFileConfig(file: File, driveFile: DriveFile) =
+    private fun matchesDriveFile(file: File, driveFile: DriveFile) =
         when {
             driveFile.id != null -> file.id == driveFile.id
             driveFile.name != null -> file.name == driveFile.name
@@ -195,10 +154,12 @@ object GoogleDrive {
      * @param driveFile Approximate file configuration
      * @return The first file matching the configuration, or null if nothing is found
      */
-    fun findFile(driveFile: DriveFile) = getFiles()
-        .find {
-            fileMatchesFileConfig(it, driveFile)
-        }
+    fun find(driveFile: DriveFile) = driveFile.space?.let {
+        files(it)
+            .find { file ->
+                matchesDriveFile(file, driveFile)
+            }
+    }
 
     /**
      * Check if a file exists in the application data folder, matching by either
@@ -207,14 +168,18 @@ object GoogleDrive {
      * @param driveFile Approximate file configuration
      * @return True if the file exists, or false if nothing is found
      */
-    fun fileExists(driveFile: DriveFile) = findFile(driveFile) != null
+    fun exists(driveFile: DriveFile) = find(driveFile) != null
 
     /**
+     * Get all Google Drive files in the specified space
+     *
+     * @param space The Google Drive space to use
      * @return A list of files in the Google Drive application data folder.
      */
-    fun getFiles(space: String = GoogleDriveSpaces.APP_DATA_FOLDER): List<File> {
+    fun files(space: String): List<File> {
         val files = mutableListOf<File>()
 
+        /* Loop until we no longer have a next page token */
         var nextPageToken: String? = null
         while (true) {
             val request = drive
@@ -241,7 +206,7 @@ object GoogleDrive {
      * @throws FileNotFoundException Desired file does not exist or cannot be found.
      */
     class Write(driveFile: DriveFile) {
-        val file = findFile(driveFile) ?: throw FileNotFoundException()
+        val file = find(driveFile) ?: throw FileNotFoundException()
 
         /**
          * Update an existing file's contents
@@ -287,8 +252,10 @@ object GoogleDrive {
      * @throws FileNotFoundException Desired file does not exist or cannot be found.
      */
     class Read(driveFile: DriveFile) {
-        val file = findFile(driveFile) ?: throw FileNotFoundException()
-        private val get = drive.files().get(file.id)
+        val file = find(driveFile) ?: throw FileNotFoundException()
+        private val get = drive
+            .files()
+            .get(file.id)
 
         fun string() = get
             .executeMedia()

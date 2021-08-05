@@ -13,7 +13,12 @@ import com.draco.bedrock.databinding.ActivitySetupGoogleBinding
 import com.draco.bedrock.fragments.SetupFragment
 import com.draco.bedrock.repositories.remote.GoogleAccount
 import com.draco.bedrock.repositories.remote.GoogleDrive
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.common.Scopes
+import com.google.android.gms.common.api.Scope
 import com.google.android.material.snackbar.Snackbar
+import com.google.api.services.drive.DriveScopes
 
 class SetupGoogleFragment : SetupFragment() {
     private lateinit var binding: ActivitySetupGoogleBinding
@@ -24,6 +29,12 @@ class SetupGoogleFragment : SetupFragment() {
         googleAccount.handleExplicitSignIn(it)
     }
 
+    private fun hasGoogleDrivePermissions(account: GoogleSignInAccount) = GoogleSignIn.hasPermissions(
+        account,
+        Scope(DriveScopes.DRIVE_APPDATA),
+        Scope(Scopes.EMAIL)
+    )
+
     /**
      * Setup Google sign-in stuff
      * @param activity Activity to request permissions on
@@ -33,10 +44,22 @@ class SetupGoogleFragment : SetupFragment() {
         googleAccount.registerLoginHandler {
             if (it != null) {
                 initGoogleDrive()
-                GoogleDrive.requestPermissionsIfNecessary(activity, it)
 
-                if (GoogleDrive.hasPermissions(it))
+                if (!hasGoogleDrivePermissions(it)) {
+                    GoogleSignIn.requestPermissions(
+                        activity,
+                        GoogleDrive.REQUEST_CODE_CHECK_PERMISSIONS,
+                        it,
+                        Scope(DriveScopes.DRIVE_APPDATA),
+                        Scope(Scopes.EMAIL)
+                    )
+
+                    /* Check again after we request */
+                    if (hasGoogleDrivePermissions(it))
+                        activity.finish()
+                } else {
                     activity.finish()
+                }
             } else
                 error?.invoke()
         }
