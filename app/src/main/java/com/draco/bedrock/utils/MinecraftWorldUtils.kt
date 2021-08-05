@@ -189,9 +189,11 @@ class MinecraftWorldUtils(private val context: Context) {
 
         /* Parse remote worlds */
         driveFiles?.forEach {
-            val matchingLocalFile = files.find { localFile -> localFile.id == it.name }
+            val matchingFile = files.find { localFile ->
+                localFile.id == it.name && localFile.type == WorldFileTypes.LOCAL
+            }
 
-            if (matchingLocalFile == null) {
+            if (matchingFile == null) {
                 val name = it.description
                 val id = it.name
 
@@ -206,7 +208,7 @@ class MinecraftWorldUtils(private val context: Context) {
                 }
             } else {
                 /* If we have this world logged already, it is present on local and remote */
-                matchingLocalFile.type = WorldFileTypes.LOCAL_REMOTE
+                matchingFile.type = WorldFileTypes.LOCAL_REMOTE
             }
         }
 
