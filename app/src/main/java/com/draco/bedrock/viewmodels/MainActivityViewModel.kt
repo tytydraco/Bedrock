@@ -293,27 +293,27 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         worldsRecyclerAdapter = WorldsRecyclerAdapter(context, mutableListOf()).apply {
             setHasStableIds(true)
 
-            uploadHook = { view, worldName ->
+            uploadHook = { view, worldId ->
                 createConfirmDialog(view.context, R.string.confirm_dialog_upload_message) {
-                    uploadWorldToDrive(view, worldName)
+                    uploadWorldToDrive(view, worldId)
                 }
             }
 
-            downloadHook = { view, worldName ->
+            downloadHook = { view, worldId ->
                 createConfirmDialog(view.context, R.string.confirm_dialog_download_message) {
-                    downloadWorldFromDrive(view, worldName)
+                    downloadWorldFromDrive(view, worldId)
                 }
             }
 
-            deleteDeviceHook = { view, worldName ->
+            deleteDeviceHook = { view, worldId ->
                 createConfirmDialog(view.context, R.string.confirm_dialog_delete_device_message) {
-                    deleteWorldFromDevice(worldName)
+                    deleteWorldFromDevice(worldId)
                 }
             }
 
-            deleteCloudHook = { view, worldName ->
+            deleteCloudHook = { view, worldId ->
                 createConfirmDialog(view.context, R.string.confirm_dialog_delete_cloud_message) {
-                    deleteWorldFromDrive(view, worldName)
+                    deleteWorldFromDrive(view, worldId)
                 }
             }
         }
