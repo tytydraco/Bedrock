@@ -111,7 +111,7 @@ class MinecraftWorldUtils(private val context: Context) {
                 it.addDirectoryContentsToZip(documentFile)
 
                 GoogleDrive.createFileIfNecessary(driveFile)
-                GoogleDrive.writeFileRaw(driveFile, it.tempFile)
+                GoogleDrive.Write(driveFile).file(it.tempFile)
             }
         }
     }
@@ -124,7 +124,7 @@ class MinecraftWorldUtils(private val context: Context) {
     fun downloadWorldFromDrive(rootDocumentFile: DocumentFile, worldId: String) {
         val driveFile = DriveFile(name = worldId)
         if (GoogleDrive.fileExists(driveFile)) {
-            GoogleDrive.readFileInputStream(driveFile).let {
+            GoogleDrive.Read(driveFile).inputStream().let {
                 /* Recreate any existing world folders */
                 deleteWorldFromDevice(rootDocumentFile, worldId)
                 rootDocumentFile.createDirectory(worldId)?.let { subFolder ->
