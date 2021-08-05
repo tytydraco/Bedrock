@@ -25,15 +25,19 @@ object GoogleDrive {
     const val REQUEST_CODE_CHECK_PERMISSIONS = 102
 
     /**
+     * Google Drive space to use
+     */
+    const val SPACE = "appDataFolder"
+
+    /**
+     * Google Drive file parent to use
+     */
+    const val PARENT = "appDataFolder"
+
+    /**
      * Fields to return when listing files
      */
-    const val LIST_FILES_FIELDS = "files/id,files/kind,files/mimeType,files/name,files/description"
-
-    object Spaces {
-        const val APP_DATA_FOLDER = "appDataFolder"
-        const val DRIVE = "drive"
-        const val PHOTOS = "photos"
-    }
+    const val LIST_FILES_FIELDS = "files(id, name, description)"
 
     /**
      * Single drive instance
@@ -69,51 +73,30 @@ object GoogleDrive {
     fun isAuthenticated() = ::drive.isInitialized
 
     /**
-     * Generate one valid Google Drive file id
-     *
-     * @param space The Google Drive space to use
-     * @return A valid Google Drive file id string
-     */
-    fun generateId(space: String): String = drive
-        .files()
-        .generateIds()
-        .setSpace(space)
-        .setCount(1)
-        .execute()
-        .ids[0]
-
-    /**
      * Create a file in the Google Drive application data folder
      *
      * @param fileModel Approximate file configuration
-     * @return Newly created file id (generated if not given)
      */
-    fun create(fileModel: File): String {
+    fun create(fileModel: File) {
         val file = File()
             .setName(fileModel.name)
             .setDescription(fileModel.description)
-            .setId(fileModel.id)
-            .setMimeType(fileModel.mimeType)
-            .setParents(fileModel.parents)
+            .setParents(listOf(PARENT))
 
-        val newFile = drive
+        drive
             .files()
             .create(file)
             .execute()
-
-        return newFile.id
     }
 
     /**
      * Create a file in the Google Drive application data folder if it does not yet exist
      *
      * @param fileModel Approximate file configuration
-     * @return Newly created file id, or existing one if it exists already
      */
-    fun createIfNecessary(fileModel: File): String? {
+    fun createIfNecessary(fileModel: File) {
         if (!exists(fileModel))
-            return create(fileModel)
-        return fileModel.id
+            create(fileModel)
     }
 
     /**
@@ -151,7 +134,7 @@ object GoogleDrive {
      * @param fileModel Approximate file configuration
      * @return The first file matching the configuration, or null if nothing is found
      */
-    fun find(fileModel: File) = files(fileModel.spaces).find { file ->
+    fun find(fileModel: File) = files().find { file ->
         fileMetadataMatches(file, fileModel)
     }
 
@@ -167,10 +150,9 @@ object GoogleDrive {
     /**
      * Get all Google Drive files in the specified space
      *
-     * @param spaces The Google Drive spaces to use
      * @return A list of files in the Google Drive application data folder.
      */
-    fun files(spaces: List<String>): List<File> {
+    fun files(): List<File> {
         val files = mutableListOf<File>()
 
         /* Loop until we no longer have a next page token */
@@ -179,7 +161,8 @@ object GoogleDrive {
             val request = drive
                 .files()
                 .list()
-                .setSpaces(spaces.joinToString(","))
+                .setPageSize(1000)
+                .setSpaces(SPACE)
                 .setFields(LIST_FILES_FIELDS)
                 .execute().also {
                     nextPageToken?.let { token -> it.nextPageToken = token }
@@ -215,7 +198,7 @@ object GoogleDrive {
             val newFile = File()
                 .setName(file.name)
                 .setDescription(file.description)
-                .setMimeType(file.mimeType)
+                .setSpaces(file.spaces)
                 .setParents(file.parents)
 
             drive
@@ -225,17 +208,17 @@ object GoogleDrive {
         }
 
         fun string(content: String) {
-            val contentBytes = ByteArrayContent.fromString(file.mimeType, content)
+            val contentBytes = ByteArrayContent.fromString("text/plain", content)
             write(contentBytes)
         }
 
         fun bytes(content: ByteArray) {
-            val contentBytes = ByteArrayContent(file.mimeType, content)
+            val contentBytes = ByteArrayContent(null, content)
             write(contentBytes)
         }
 
         fun file(content: java.io.File) {
-            val contentBytes = FileContent(file.mimeType, content)
+            val contentBytes = FileContent(null, content)
             write(contentBytes)
         }
     }
