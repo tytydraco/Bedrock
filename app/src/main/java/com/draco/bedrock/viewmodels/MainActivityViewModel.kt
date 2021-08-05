@@ -17,7 +17,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.draco.bedrock.R
-import com.draco.bedrock.models.DriveFile
 import com.draco.bedrock.models.WorldFile
 import com.draco.bedrock.recyclers.WorldsRecyclerAdapter
 import com.draco.bedrock.repositories.constants.Minecraft
@@ -25,8 +24,6 @@ import com.draco.bedrock.repositories.constants.SetupSteps
 import com.draco.bedrock.repositories.constants.WorldFileTypes
 import com.draco.bedrock.repositories.remote.GoogleAccount
 import com.draco.bedrock.repositories.remote.GoogleDrive
-import com.draco.bedrock.utils.DocumentFileUnZip
-import com.draco.bedrock.utils.DocumentFileZip
 import com.draco.bedrock.utils.MinecraftWorldUtils
 import com.github.javiersantos.piracychecker.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -298,45 +295,25 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
             uploadHook = { view, worldName ->
                 createConfirmDialog(view.context, R.string.confirm_dialog_upload_message) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        safeCatch(view) {
-                            uploadWorldToDrive(worldName)
-                            updateWorldsList()
-                        }
-                    }
+                    uploadWorldToDrive(view, worldName)
                 }
             }
 
             downloadHook = { view, worldName ->
                 createConfirmDialog(view.context, R.string.confirm_dialog_download_message) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        safeCatch(view) {
-                            downloadWorldFromDrive(worldName)
-                            updateWorldsList()
-                        }
-                    }
+                    downloadWorldFromDrive(view, worldName)
                 }
             }
 
             deleteDeviceHook = { view, worldName ->
                 createConfirmDialog(view.context, R.string.confirm_dialog_delete_device_message) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        safeCatch(view) {
-                            deleteWorldFromDevice(worldName)
-                            updateWorldsList()
-                        }
-                    }
+                    deleteWorldFromDevice(worldName)
                 }
             }
 
             deleteCloudHook = { view, worldName ->
                 createConfirmDialog(view.context, R.string.confirm_dialog_delete_cloud_message) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        safeCatch(view) {
-                            deleteWorldFromDrive(worldName)
-                            updateWorldsList()
-                        }
-                    }
+                    deleteWorldFromDrive(view, worldName)
                 }
             }
         }
@@ -358,71 +335,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     /**
-     * Upload all Minecraft worlds
-     * @param view A view to display the Snackbar on
-     */
-    fun uploadAll(view: View) {
-        viewModelScope.launch(Dispatchers.IO) {
-            safeCatch(view) {
-                _worldList.value?.forEach {
-                    uploadWorldToDrive(it.id)
-                }
-                updateWorldsList()
-            }
-        }
-    }
-
-    /**
-     * Download all Minecraft worlds
-     * @param view A view to display the Snackbar on
-     */
-    fun downloadAll(view: View) {
-        viewModelScope.launch(Dispatchers.IO) {
-            safeCatch(view) {
-                _worldList.value?.forEach {
-                    downloadWorldFromDrive(it.id)
-                }
-
-                updateWorldsList()
-            }
-        }
-    }
-
-    /**
-     * Delete all local Minecraft worlds
-     * @param view A view to display the Snackbar on
-     */
-    fun deleteAllDevice(view: View) {
-        viewModelScope.launch(Dispatchers.IO) {
-            safeCatch(view) {
-                rootDocumentFile?.listFiles()?.forEach {
-                    it?.name?.let { name ->
-                        deleteWorldFromDevice(name)
-                    }
-                }
-
-                updateWorldsList()
-            }
-        }
-    }
-
-    /**
-     * Delete all remote Minecraft worlds
-     * @param view A view to display the Snackbar on
-     */
-    fun deleteAllCloud(view: View) {
-        viewModelScope.launch(Dispatchers.IO) {
-            safeCatch(view) {
-                _worldList.value?.forEach {
-                    deleteWorldFromDrive(it.id)
-                }
-
-                updateWorldsList()
-            }
-        }
-    }
-
-    /**
      * Initialize the Google Drive instance
      */
     fun initGoogleDrive() {
@@ -431,77 +343,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         googleAccount.account?.let {
             googleDrive = GoogleDrive(context, it)
         }
-    }
-
-    /**
-     * Delete a local Minecraft world
-     * @param worldId Folder ID to use to find what to delete
-     */
-    fun deleteWorldFromDevice(worldId: String) {
-        _working.postValue(R.string.working_delete_device)
-        rootDocumentFile?.listFiles()?.find { it.name == worldId }?.delete()
-        _working.postValue(null)
-    }
-
-    /**
-     * Delete a remote Minecraft world
-     * @param worldId Folder ID to use to find what to delete
-     */
-    fun deleteWorldFromDrive(worldId: String) {
-        _working.postValue(R.string.working_delete_cloud)
-        val driveFile = DriveFile(name = worldId)
-        googleDrive?.deleteFile(driveFile)
-        _working.postValue(null)
-    }
-
-    /**
-     * Upload a Minecraft world to the cloud
-     * @param worldId Folder ID to use to find what to delete
-     */
-    fun uploadWorldToDrive(worldId: String) {
-        _working.postValue(R.string.working_zipping)
-
-        rootDocumentFile?.listFiles()?.find { it.name == worldId }?.let { documentFile ->
-            val driveFile = DriveFile(
-                name = worldId,
-                description = minecraftWorldUtils.getLevelName(documentFile)
-            )
-
-            DocumentFileZip(contentResolver).use {
-                it.addDirectoryContentsToZip(documentFile)
-
-                _working.postValue(R.string.working_uploading)
-                googleDrive?.createFileIfNecessary(driveFile)
-                googleDrive?.writeFileRaw(driveFile, it.tempFile)
-            }
-        }
-
-        _working.postValue(null)
-    }
-
-    /**
-     * Download and extract a Minecraft world from the cloud
-     * @param worldId Folder ID to use to find what to delete
-     */
-    fun downloadWorldFromDrive(worldId: String) {
-        _working.postValue(R.string.working_downloading)
-
-        val driveFile = DriveFile(name = worldId)
-        if (googleDrive?.fileExists(driveFile) == true) {
-            googleDrive?.readFileInputStream(driveFile)?.let {
-                /* Recreate any existing world folders */
-                rootDocumentFile?.listFiles()?.find { it.name == worldId }?.delete()
-                rootDocumentFile?.createDirectory(worldId)?.let { subFolder ->
-                    _working.postValue(R.string.working_unzipping)
-
-                    DocumentFileUnZip(contentResolver, subFolder, it).use {
-                        it.extractZipEntryToDocumentFile()
-                    }
-                }
-            }
-        }
-
-        _working.postValue(null)
     }
 
     /**
@@ -523,6 +364,148 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 wakeLock.release()
             }
+        }
+    }
+
+    /**
+     * Upload all Minecraft worlds
+     * @param view A view to display the Snackbar on
+     */
+    fun uploadAll(view: View) {
+        val worldList = _worldList.value ?: return
+        val rootDocumentFile = rootDocumentFile ?: return
+        val googleDrive = googleDrive ?: return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            _working.postValue(R.string.working_uploading)
+            safeCatch(view) {
+                minecraftWorldUtils.uploadAll(worldList, rootDocumentFile, googleDrive)
+            }
+            _working.postValue(null)
+            updateWorldsList()
+        }
+    }
+
+    /**
+     * Download all Minecraft worlds
+     * @param view A view to display the Snackbar on
+     */
+    fun downloadAll(view: View) {
+        val worldList = _worldList.value ?: return
+        val rootDocumentFile = rootDocumentFile ?: return
+        val googleDrive = googleDrive ?: return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            _working.postValue(R.string.working_downloading)
+            safeCatch(view) {
+                minecraftWorldUtils.downloadAll(worldList, rootDocumentFile, googleDrive)
+            }
+            _working.postValue(null)
+            updateWorldsList()
+        }
+    }
+
+    /**
+     * Delete all local Minecraft worlds
+     */
+    fun deleteAllDevice() {
+        val rootDocumentFile = rootDocumentFile ?: return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            _working.postValue(R.string.working_delete_device)
+            minecraftWorldUtils.deleteAllDevice(rootDocumentFile)
+            _working.postValue(null)
+            updateWorldsList()
+        }
+    }
+
+    /**
+     * Delete all remote Minecraft worlds
+     * @param view A view to display the Snackbar on
+     */
+    fun deleteAllCloud(view: View) {
+        val worldList = _worldList.value ?: return
+        val googleDrive = googleDrive ?: return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            _working.postValue(R.string.working_delete_cloud)
+            safeCatch(view) {
+                minecraftWorldUtils.deleteAllCloud(worldList, googleDrive)
+            }
+            _working.postValue(null)
+            updateWorldsList()
+        }
+    }
+
+    /**
+     * Delete a local Minecraft world
+     * @param view A view to display the Snackbar on
+     * @param worldId Folder ID to use to find what to delete
+     */
+    fun deleteWorldFromDevice(worldId: String) {
+        val rootDocumentFile = rootDocumentFile ?: return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            _working.postValue(R.string.working_delete_device)
+            minecraftWorldUtils.deleteWorldFromDevice(rootDocumentFile, worldId)
+            _working.postValue(null)
+            updateWorldsList()
+        }
+    }
+
+    /**
+     * Delete a remote Minecraft world
+     * @param view A view to display the Snackbar on
+     * @param worldId Folder ID to use to find what to delete
+     */
+    fun deleteWorldFromDrive(view: View, worldId: String) {
+        val googleDrive = googleDrive ?: return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            _working.postValue(R.string.working_delete_cloud)
+            safeCatch(view) {
+                minecraftWorldUtils.deleteWorldFromDrive(worldId, googleDrive)
+            }
+            _working.postValue(null)
+            updateWorldsList()
+        }
+    }
+
+    /**
+     * Upload a Minecraft world to the cloud
+     * @param view A view to display the Snackbar on
+     * @param worldId Folder ID to use to find what to delete
+     */
+    fun uploadWorldToDrive(view: View, worldId: String) {
+        val rootDocumentFile = rootDocumentFile ?: return
+        val googleDrive = googleDrive ?: return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            _working.postValue(R.string.working_uploading)
+            safeCatch(view) {
+                minecraftWorldUtils.uploadWorldToDrive(rootDocumentFile, worldId, googleDrive)
+            }
+            _working.postValue(null)
+            updateWorldsList()
+        }
+    }
+
+    /**
+     * Download and extract a Minecraft world from the cloud
+     * @param view A view to display the Snackbar on
+     * @param worldId Folder ID to use to find what to delete
+     */
+    fun downloadWorldFromDrive(view: View, worldId: String) {
+        val rootDocumentFile = rootDocumentFile ?: return
+        val googleDrive = googleDrive ?: return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            _working.postValue(R.string.working_downloading)
+            safeCatch(view) {
+                minecraftWorldUtils.downloadWorldFromDrive(rootDocumentFile, worldId, googleDrive)
+            }
+            _working.postValue(null)
+            updateWorldsList()
         }
     }
 }

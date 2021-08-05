@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.delete_device_all -> {
                 viewModel.createConfirmDialog(this, R.string.confirm_dialog_delete_device_all_message) {
-                    viewModel.deleteAllDevice(binding.worldList)
+                    viewModel.deleteAllDevice()
                 }
                 true
             }
