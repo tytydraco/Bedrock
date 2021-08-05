@@ -1,11 +1,18 @@
 package com.draco.bedrock.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.viewModelScope
+import com.draco.bedrock.R
 import com.draco.bedrock.models.DriveFile
 import com.draco.bedrock.models.WorldFile
 import com.draco.bedrock.repositories.constants.Minecraft
+import com.draco.bedrock.repositories.constants.WorldFileTypes
 import com.draco.bedrock.repositories.remote.GoogleDrive
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MinecraftWorldUtils(private val context: Context) {
     private val contentResolver = context.contentResolver
@@ -141,5 +148,65 @@ class MinecraftWorldUtils(private val context: Context) {
                 }
             }
         }
+    }
+
+    /**
+     * Update the recycler adapter with all of our worlds
+     * @param rootDocumentFile Optional Minecraft Worlds DocumentFile
+     * @return List of WorldFiles
+     */
+    @SuppressLint("NotifyDataSetChanged")
+    fun list(rootDocumentFile: DocumentFile?): List<WorldFile> {
+        /* Get both local and remote worlds */
+        val localFiles = rootDocumentFile?.listFiles()
+        val driveFiles = try {
+            GoogleDrive.files(GoogleDrive.Spaces.APP_DATA_FOLDER)
+        } catch (e: Exception) {
+            null
+        }
+
+        val files = mutableListOf<WorldFile>()
+
+        /* Parse local worlds */
+        localFiles?.forEach {
+            val name = getLevelName(it)?.trim()
+            val id = it.name
+
+            if (name != null && id != null) {
+                files.add(
+                    WorldFile(
+                        name,
+                        id,
+                        WorldFileTypes.LOCAL
+                    )
+                )
+            }
+        }
+
+        /* Parse remote worlds */
+        driveFiles?.forEach {
+            val matchingLocalFile = files.find { localFile -> localFile.id == it.name }
+
+            if (matchingLocalFile == null) {
+                val name = it.description
+                val id = it.name
+
+                if (name != null && id != null) {
+                    files.add(
+                        WorldFile(
+                            name,
+                            id,
+                            WorldFileTypes.REMOTE
+                        )
+                    )
+                }
+            } else {
+                /* If we have this world logged already, it is present on local and remote */
+                matchingLocalFile.type = WorldFileTypes.LOCAL_REMOTE
+            }
+        }
+
+        /* Sort worlds by their pretty name */
+        return files.sortedBy { it.name }.toMutableList()
     }
 }

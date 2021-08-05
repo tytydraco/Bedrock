@@ -195,69 +195,18 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     /**
      * Update the recycler adapter with all of our worlds
      */
-    @SuppressLint("NotifyDataSetChanged")
     fun updateWorldsList() {
         viewModelScope.launch(Dispatchers.IO) {
             _working.postValue(R.string.working_updating_world_list)
 
-            /* Get both local and remote worlds */
-            val localFiles = rootDocumentFile?.listFiles()
-            val driveFiles = try {
-                GoogleDrive.files(GoogleDrive.Spaces.APP_DATA_FOLDER)
-            } catch (e: Exception) {
-                null
-            }
+            val list = minecraftWorldUtils.list(rootDocumentFile)
 
-            val files = mutableListOf<WorldFile>()
-
-            /* Parse local worlds */
-            localFiles?.forEach {
-                val name = minecraftWorldUtils.getLevelName(it)?.trim()
-                val id = it.name
-
-                if (name != null && id != null) {
-                    files.add(
-                        WorldFile(
-                            name,
-                            id,
-                            WorldFileTypes.LOCAL
-                        )
-                    )
-                }
-            }
-
-            /* Parse remote worlds */
-            driveFiles?.forEach {
-                val matchingLocalFile = files.find { localFile -> localFile.id == it.name }
-
-                if (matchingLocalFile == null) {
-                    val name = it.description
-                    val id = it.name
-
-                    if (name != null && id != null) {
-                        files.add(
-                            WorldFile(
-                                name,
-                                id,
-                                WorldFileTypes.REMOTE
-                            )
-                        )
-                    }
-                } else {
-                    /* If we have this world logged already, it is present on local and remote */
-                    matchingLocalFile.type = WorldFileTypes.LOCAL_REMOTE
-                }
-            }
-
-            /* Sort worlds by their pretty name */
-            val newWorlds = files.sortedBy { it.name }.toMutableList()
-
-            _worldList.postValue(newWorlds)
+            _worldList.postValue(list)
 
             /* Update the recycler adapter */
             withContext(Dispatchers.Main) {
                 worldsRecyclerAdapter?.let {
-                    it.worldFileList = newWorlds
+                    it.worldFileList = list.toMutableList()
                     it.notifyDataSetChanged()
                 }
             }
