@@ -73,8 +73,6 @@
     <string name="working_downloading">Downloading world to device</string>
     <string name="working_delete_device">Deleting world from device</string>
     <string name="working_delete_cloud">Deleting world from cloud</string>
-    <string name="working_zipping">Zipping world files</string>
-    <string name="working_unzipping">Unzipping world files</string>
     <string name="working_updating_world_list">Refreshing world list</string>
 
     <string name="pref_file" translatable="false">preferences</string>

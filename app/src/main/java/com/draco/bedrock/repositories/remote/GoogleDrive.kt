@@ -13,6 +13,7 @@ import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File
 import java.io.FileNotFoundException
+import java.io.InputStream
 
 
 /**
@@ -257,7 +258,7 @@ object GoogleDrive {
             .files()
             .get(file.id)
 
-        fun string() = get
+        fun string(): String = get
             .executeMedia()
             .parseAsString()
 
@@ -268,7 +269,7 @@ object GoogleDrive {
                 it.readBytes()
             }
 
-        fun inputStream() = get
+        fun inputStream(): InputStream = get
             .executeMediaAsInputStream()
     }
 }

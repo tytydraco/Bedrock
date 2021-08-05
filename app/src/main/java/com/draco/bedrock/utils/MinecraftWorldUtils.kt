@@ -3,16 +3,11 @@ package com.draco.bedrock.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
-import androidx.lifecycle.viewModelScope
-import com.draco.bedrock.R
 import com.draco.bedrock.models.DriveFile
 import com.draco.bedrock.models.WorldFile
 import com.draco.bedrock.repositories.constants.Minecraft
 import com.draco.bedrock.repositories.constants.WorldFileTypes
 import com.draco.bedrock.repositories.remote.GoogleDrive
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MinecraftWorldUtils(private val context: Context) {
     private val contentResolver = context.contentResolver

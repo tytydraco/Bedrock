@@ -21,11 +21,11 @@ import com.draco.bedrock.models.WorldFile
 import com.draco.bedrock.recyclers.WorldsRecyclerAdapter
 import com.draco.bedrock.repositories.constants.Minecraft
 import com.draco.bedrock.repositories.constants.SetupSteps
-import com.draco.bedrock.repositories.constants.WorldFileTypes
 import com.draco.bedrock.repositories.remote.GoogleAccount
 import com.draco.bedrock.repositories.remote.GoogleDrive
 import com.draco.bedrock.utils.MinecraftWorldUtils
-import com.github.javiersantos.piracychecker.*
+import com.github.javiersantos.piracychecker.PiracyChecker
+import com.github.javiersantos.piracychecker.piracyChecker
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.Scopes
 import com.google.android.gms.common.api.Scope
@@ -399,7 +399,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Delete a local Minecraft world
-     * @param view A view to display the Snackbar on
      * @param worldId Folder ID to use to find what to delete
      */
     fun deleteWorldFromDevice(worldId: String) {
