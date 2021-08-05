@@ -74,7 +74,7 @@ object GoogleDrive {
      * @param space The Google Drive space to use
      * @return A valid Google Drive file id string
      */
-    fun generateId(space: String) = drive
+    fun generateId(space: String): String = drive
         .files()
         .generateIds()
         .setSpace(space)
@@ -167,7 +167,7 @@ object GoogleDrive {
     /**
      * Get all Google Drive files in the specified space
      *
-     * @param space The Google Drive space to use
+     * @param spaces The Google Drive spaces to use
      * @return A list of files in the Google Drive application data folder.
      */
     fun files(spaces: List<String>): List<File> {
