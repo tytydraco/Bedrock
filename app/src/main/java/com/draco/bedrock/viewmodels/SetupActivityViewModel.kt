@@ -14,6 +14,7 @@ import com.draco.bedrock.repositories.constants.SetupSteps
 class SetupActivityViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * Initialize the ViewPager
+     *
      * @param fragmentActivity The FragmentActivity holding the ViewPager
      * @param pager The ViewPager2 instance
      * @param bundle The bundle containing booleans for which setup steps to show

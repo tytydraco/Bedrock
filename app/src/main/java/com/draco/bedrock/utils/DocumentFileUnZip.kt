@@ -17,9 +17,7 @@ class DocumentFileUnZip(
      * Iterate and extract all entries
      */
     fun extractZipEntryToDocumentFile() {
-        val parentFileMap = mutableMapOf(
-            "" to documentFile
-        )
+        val parentFileMap = mutableMapOf("" to documentFile)
 
         var zipEntry = zipInputStream.nextEntry
         while (zipEntry != null) {
@@ -43,6 +41,7 @@ class DocumentFileUnZip(
 
     /**
      * Write the current ZipEntry contents to the document file
+     *
      * @param file DocumentFile to write the next entry to
      */
     fun writeFile(file: DocumentFile) {

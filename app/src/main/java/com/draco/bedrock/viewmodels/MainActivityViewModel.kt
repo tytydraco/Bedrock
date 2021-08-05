@@ -79,6 +79,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Check which setup fragments need to be shown
+     *
      * @param completedListener A runnable that is passed a bundle with setup steps
      */
     fun getSetupActivityBundle(completedListener: (Bundle) -> Unit) {
@@ -114,6 +115,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Start the piracy checker if it is not setup yet
+     *
      * @param activity Activity to use when showing the error
      */
     fun piracyCheck(activity: Activity) {
@@ -137,6 +139,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Setup Google sign-in stuff
+     *
      * @param success Runnable to execute if sign-in succeeds
      * @param error Runnable to execute if sign-in fails
      */
@@ -163,6 +166,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Create and show a dialog to confirm changes
+     *
      * @param context View-bound context
      * @param messageResId String Res-id to show in a dialog
      * @param action Runnable to execute if user confirms
@@ -178,6 +182,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Check if the user already has SAF permissions and set the root document
+     *
      * @return True if we were able to set the root document, false if no persisted Uri
      */
     fun getPersistableUri(): Boolean {
@@ -217,6 +222,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Catch exceptions, display an error for the user, and reset working progress
+     *
      * @param view A view to display the Snackbar on
      * @param runnable The problematic runnable to safely run
      */
@@ -249,6 +255,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Prepare the RecyclerView Adapter
+     *
      * @param context View-bound context
      */
     private fun prepareRecyclerAdapter(context: Context) {
@@ -286,6 +293,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Prepare the RecyclerView
+     *
      * @param context View-bound context
      * @param recycler RecyclerView to hook to
      */
@@ -314,6 +322,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Toggle wakelocks while doing work
+     *
      * @param state True to keep a wakelock, false to release it
      */
     @SuppressLint("WakelockTimeout")
@@ -336,6 +345,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Upload all Minecraft worlds
+     *
      * @param view A view to display the Snackbar on
      */
     fun uploadAll(view: View) {
@@ -354,6 +364,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Download all Minecraft worlds
+     *
      * @param view A view to display the Snackbar on
      */
     fun downloadAll(view: View) {
@@ -386,6 +397,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Delete all remote Minecraft worlds
+     *
      * @param view A view to display the Snackbar on
      */
     fun deleteAllCloud(view: View) {
@@ -403,6 +415,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Delete a local Minecraft world
+     *
      * @param worldId Folder ID to use to find what to delete
      */
     fun deleteWorldFromDevice(worldId: String) {
@@ -418,6 +431,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Delete a remote Minecraft world
+     *
      * @param view A view to display the Snackbar on
      * @param worldId Folder ID to use to find what to delete
      */
@@ -434,6 +448,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Upload a Minecraft world to the cloud
+     *
      * @param view A view to display the Snackbar on
      * @param worldId Folder ID to use to find what to delete
      */
@@ -452,6 +467,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     /**
      * Download and extract a Minecraft world from the cloud
+     *
      * @param view A view to display the Snackbar on
      * @param worldId Folder ID to use to find what to delete
      */

@@ -31,6 +31,7 @@ class WorldsRecyclerAdapter(
 
     /**
      * Get an attribute color
+     *
      * @param attrId Res-id for attribute
      * @return Color as an Int
      */

@@ -17,6 +17,7 @@ class DocumentFileZip(
 
     /**
      * Recursively add files from directory to zip
+     *
      * @param rootFile Directory to recurse from
      * @param pwd The current parent working directory
      */
@@ -35,6 +36,7 @@ class DocumentFileZip(
 
     /**
      * Read a DocumentFile and return a ByteArray of its contents
+     *
      * @param file DocumentFile to read from
      * @return The byte contents or null
      */
@@ -46,6 +48,7 @@ class DocumentFileZip(
 
     /**
      * Create an empty folder in the zip file
+     *
      * @param path Path of the empty folder to add
      */
     fun addEmptyFolderToZip(path: String) {
@@ -58,6 +61,7 @@ class DocumentFileZip(
 
     /**
      * Add a DocumentFile to the Zip file
+     *
      * @param file DocumentFile to add
      * @param path Where to place this file
      */
