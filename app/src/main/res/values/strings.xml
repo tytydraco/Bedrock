@@ -36,7 +36,7 @@
     <string name="dialog_button_no">No</string>
 
     <string name="setup_sign_in">Sign-in to Google and grant Google Drive access to continue</string>
-    <string name="setup_saf">This app needs access to your Minecraft Worlds folder.\n\nSelect the <b>/sdcard/games/com.mojang/minecraftWorlds</b> folder.</string>
+    <string name="setup_saf">This app needs access to your Minecraft Worlds folder.\n\nSelect the <b>/sdcard/games/com.mojang/minecraftWorlds</b> folder.<b>\n\nNOTE: Microsoft is planning on deprecating this soon.</b></string>
 
     <string name="desc_status_phone">Stored locally</string>
     <string name="desc_status_cloud">Stored on the cloud</string>
