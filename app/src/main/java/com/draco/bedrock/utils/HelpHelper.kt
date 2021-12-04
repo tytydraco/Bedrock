@@ -17,6 +17,15 @@ class HelpHelper(private val activity: Activity) {
         }
         .create()
 
+    val safExportDialog = MaterialAlertDialogBuilder(activity)
+        .setTitle(R.string.saf_export_dialog_title)
+        .setMessage(R.string.saf_export_dialog_message)
+        .setPositiveButton(R.string.dialog_button_okay) { _, _ -> }
+        .setNeutralButton(R.string.dialog_button_support) { _, _ ->
+            sendSupportEmail()
+        }
+        .create()
+
     /**
      * Open email app for support
      */

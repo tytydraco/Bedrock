@@ -78,5 +78,9 @@ class SetupSafFragment : SetupFragment() {
         binding.help.setOnClickListener {
             helpHelper.safHelpDialog.show()
         }
+
+        binding.export.setOnClickListener {
+            helpHelper.safExportDialog.show()
+        }
     }
 }

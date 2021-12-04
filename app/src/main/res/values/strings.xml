@@ -30,6 +30,9 @@
     <string name="saf_help_dialog_title">Help</string>
     <string name="saf_help_dialog_message">Make sure that your Minecraft File Storage setting (Settings->Profile->File Storage Location) is set to \"External\" and not \"Application\". Apps are not allowed to access the \"Application\" worlds.</string>
 
+    <string name="saf_export_dialog_title">Export</string>
+    <string name="saf_export_dialog_message">Is your minecraftWorlds folder missing? Here\'s how to export your worlds so that Bedrock can access them.\n\nUsing ADB, run this command, then check for the folder again:\n\nadb shell cp -ra /sdcard/Android/com.mojang.minecraftpe/files/games/com.mojang/minecraftWorlds/ /sdcard/</string>
+
     <string name="dialog_button_okay">Okay</string>
     <string name="dialog_button_support">Support</string>
     <string name="dialog_button_yes">Yes</string>
@@ -37,6 +40,7 @@
 
     <string name="setup_sign_in">Sign-in to Google and grant Google Drive access to continue</string>
     <string name="setup_saf">This app needs access to your Minecraft Worlds folder.\n\nSelect the <b>/sdcard/games/com.mojang/minecraftWorlds</b> folder.<b>\n\nNOTE: Microsoft is planning on deprecating this soon.</b></string>
+    <string name="setup_saf_export">This app needs access to your Minecraft Worlds folder.\n\nSelect the <b>/sdcard/games/com.mojang/minecraftWorlds</b> folder.<b>\n\nNOTE: Microsoft is planning on deprecating this soon.</b></string>
 
     <string name="desc_status_phone">Stored locally</string>
     <string name="desc_status_cloud">Stored on the cloud</string>
@@ -67,7 +71,9 @@
     <string name="menu_action_delete_cloud_all">Delete all from cloud</string>
 
     <string name="no_worlds">No worlds found :(</string>
+
     <string name="button_help">Help</string>
+    <string name="button_export">Export</string>
 
     <string name="working_uploading">Uploading world to cloud</string>
     <string name="working_downloading">Downloading world to device</string>
